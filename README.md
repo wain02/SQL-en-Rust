@@ -1,2 +1,4 @@
 # SQL-en-Rust
-## Tp1 - Taller - Deymonnaz 
+## Tp1 - Taller - Deymonnaz
+comando de ejemplo: 
+cargo run -- ruta/a/tablas "SELECT * FROM ordenes;"
