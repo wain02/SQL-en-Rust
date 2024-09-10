@@ -1,15 +1,16 @@
+//cargo run -- ruta/a/tablas "DELETE FROM ordenes  WHERE producto = 'Laptop';"
 use std::{fs, io::BufWriter};
-use csv::{Reader, Writer};
-use std::error::Error;
+//use csv::{Reader, Writer};
+//use std::error::Error;
 
 use crate::parciar::regex_casero;
 //use csv::Writer;
-use std::fs::OpenOptions;
+//use std::fs::OpenOptions;
 use std::io;
 
-use std::fs::File;
+//use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
-use csv::ReaderBuilder;
+//use csv::ReaderBuilder;
 
 pub fn comando_delete(consulta_del_terminal: String){
     
@@ -26,7 +27,7 @@ pub fn comando_delete(consulta_del_terminal: String){
             where_delete.push(condicion);
         }
     }
-    delete_csv(where_delete, tabla);
+   let _ = delete_csv(where_delete, tabla);
 }
 
 
@@ -37,19 +38,19 @@ pub fn delete_csv(vec_delete: Vec<String>, tabla_delelete: String) -> io::Result
 
     for i in vec_delete{
                
-        let mut consulta_vec: Vec<&str> = i.trim().split("=").collect();
+        let consulta_vec: Vec<&str> = i.trim().split("=").collect();
         
         columna_csv = consulta_vec[0].to_string();
         target = consulta_vec[1].replace("'", "").replace(";","").replace(" ", "");
 
     }
 
-    let mut  input = BufReader::new(fs::File::open(&tabla_delelete)?);
+    let input = BufReader::new(fs::File::open(&tabla_delelete)?);
     let mut lines = input.lines();
     let mut archivo_copia = BufWriter::new(fs::File::create("archivo_copia.csv")?);
     let mut contador_columnas = 0;
     let mut index = 0;
-    let mut new_lines: Vec<String> = Vec::new();
+    //let mut new_lines: Vec<String> = Vec::new();
     
     if let Some(Ok(header)) = &lines.next() {
         let columns: Vec<&str>  = header.split(',').collect();

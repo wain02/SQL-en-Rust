@@ -4,20 +4,20 @@ mod update;
 mod parciar;
 mod select;
 mod sql_predicate;
-use csv::{Reader, Writer};
-use std::error::Error;
-use std::fs::OpenOptions;
-use std::io;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
-use std::collections::HashMap;
-use std::{fs, io::BufWriter};
+//use csv::{Reader, Writer};
+//use std::error::Error;
+//use std::fs::OpenOptions;
+//use std::io;
+//use std::fs::File;
+//use std::io::{BufRead, BufReader, Write};
+//use std::collections::HashMap;
+//use std::{fs, io::BufWriter};
 
 
 fn main() {
     let terminal: Vec<String> = std::env::args().collect();
     let consulta_terminal = &terminal[2]; //consulta completa de SQL
-    let mut consulta = consulta_terminal.replace(",", "").replace("\n", " "); 
+    let consulta = consulta_terminal.replace(",", "").replace("\n", " "); 
     
 
     let mut partes_consulta: Vec<&str> = consulta.trim().split_whitespace().collect(); // Divide la cadena en partes

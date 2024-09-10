@@ -2,15 +2,15 @@
 //use crate::parciar::{regex_casero, parse_operadores};
 use crate::parciar::regex_casero;
 use std::{fs, io::BufWriter};
-use csv::{Reader, Writer};
-use std::error::Error;
+//use csv::{Reader, Writer};
+//use std::error::Error;
 
-use std::fs::OpenOptions;
+//use std::fs::OpenOptions;
 use std::io;
 
-use std::fs::File;
+//use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
-use csv::ReaderBuilder;
+//use csv::ReaderBuilder;
 
 
 #[derive(Debug)]
@@ -26,7 +26,7 @@ enum SqlOperador {
     Or,
 }
 
-struct SqlCondicionesLogicas {
+pub struct SqlCondicionesLogicas {
     conditions: Vec<SqlSelect>,
     logic_ops: Vec<SqlOperador>, // Operadores entre las condiciones
 }
@@ -34,15 +34,15 @@ struct SqlCondicionesLogicas {
 pub fn comando_select(consulta_del_terminal: String){
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
 
-    let mut claves: Vec<&str> = vec!["WHERE", "SELECT", "FROM"];
-    let mut condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
+    let claves: Vec<&str> = vec!["WHERE", "SELECT", "FROM"];
+    let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
 
     let mut tabla_de_consulta = String::new();
     
-    let mut tabla_leer = &condiciones_separadas[1]; 
+    let tabla_leer = &condiciones_separadas[1]; 
     let condicion = &condiciones_separadas[2];
 
-    let tablas_existentes = vec!["ordenes", "clientes"];
+    //let tablas_existentes = vec!["ordenes", "clientes"];
     
     match tabla_leer.as_str(){
         "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
@@ -51,19 +51,19 @@ pub fn comando_select(consulta_del_terminal: String){
     
     }
     let mut vector_consulta_string: Vec<String> = Vec::new();
-    let mut vec_filtro_string: Vec<String> = Vec::new();
+    //let mut vec_filtro_string: Vec<String> = Vec::new();
 
     
     let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else { todo!() };
-        let struct_filtro = SqlSelect {
-            columna: columna_filtro,
-            operador: operador_valor,
-            valor: valor_filtro,
-        };
+        // let struct_filtro = SqlSelect {
+        //     columna: columna_filtro,
+        //     operador: operador_valor,
+        //     valor: valor_filtro,
+        // };
 
     let condiciones_logicas = parciar_condiciones_logicas(condicion);
     
-    let mut header_columnas: Vec<&str> = condiciones_separadas[0].trim().split_whitespace().collect();
+    let header_columnas: Vec<&str> = condiciones_separadas[0].trim().split_whitespace().collect();
     //let mut vector_consulta: Vec<&str> = Vec::new();
     if !(header_columnas.contains(&"*")){
         for i in header_columnas {
@@ -71,7 +71,7 @@ pub fn comando_select(consulta_del_terminal: String){
         }
     }
 
-    select_csv(tabla_de_consulta, vector_consulta_string, condiciones_logicas);
+    let _ = select_csv(tabla_de_consulta, vector_consulta_string, condiciones_logicas);
 
 }
 
@@ -126,9 +126,9 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas 
 pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
-    let mut index = 0;
+    //let mut index = 0;
 
-    let mut  input = BufReader::new(fs::File::open(&tabla)?);
+    let input = BufReader::new(fs::File::open(&tabla)?);
     let mut lines = input.lines();
     let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
 
@@ -160,8 +160,8 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
     }
 
     for line in lines {
-        let mut line = line?;
-        let mut columnas: Vec<&str> = line.split(',').collect();
+        let line = line?;
+        let columnas: Vec<&str> = line.split(',').collect();
         if evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
             //writeln!(archivo_output, "{}", line)?;
             let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();

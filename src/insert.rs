@@ -1,6 +1,6 @@
 use std::fs::OpenOptions;
 pub fn comando_insert(consulta_inst_terminal: String) {
-    let mut consulta_inst = consulta_inst_terminal
+    let consulta_inst = consulta_inst_terminal
         .replace(",", "")
         .replace("\n", " ")
         .replace(";", "")
@@ -8,10 +8,10 @@ pub fn comando_insert(consulta_inst_terminal: String) {
         .replace(")", "")
         .replace("'", "");
         
-    let mut division_values: Vec<&str> = consulta_inst.trim().split("VALUES").collect(); // Divide la cadena en partes
-    let mut previo_values = division_values[0];
-    let mut posterior_values = division_values[1];
-    let mut valores_insert: Vec<&str> = posterior_values.trim().split_whitespace().collect(); //[111, 6, 'Laptop', 3]
+    let division_values: Vec<&str> = consulta_inst.trim().split("VALUES").collect(); // Divide la cadena en partes
+    let previo_values = division_values[0];
+    let posterior_values = division_values[1];
+    let valores_insert: Vec<&str> = posterior_values.trim().split_whitespace().collect(); //[111, 6, 'Laptop', 3]
     let mut columas_insert: Vec<&str> = previo_values.trim().split_whitespace().collect(); //[id, id_cliente, producto, cantidad]
 
     columas_insert.remove(0);
@@ -25,14 +25,14 @@ pub fn comando_insert(consulta_inst_terminal: String) {
 pub fn write_csv(insert: Vec<&str>, tabla_insert: String) {
     let mut tabla_csv = String::from(tabla_insert);
     tabla_csv.push_str(".csv");
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .write(true)
         .append(true)
         .open(tabla_csv)
         .unwrap();
 
     let mut wtr = csv::Writer::from_writer(file);
-    wtr.write_record(&insert);
+    let _ = wtr.write_record(&insert); //let _ = que no me importa el resultado.
     
 } 
 
