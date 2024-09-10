@@ -17,7 +17,7 @@ use std::{fs, io::BufWriter};
 fn main() {
     let terminal: Vec<String> = std::env::args().collect();
     let consulta_terminal = &terminal[2]; //consulta completa de SQL
-    
+    println!("MESIIIIIII");
     let mut consulta = consulta_terminal.replace(",", "").replace("\n", " "); 
     
 
