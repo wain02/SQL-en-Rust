@@ -4,6 +4,7 @@ mod update;
 mod parciar;
 mod select;
 mod sql_predicate;
+mod sql_conditions;
 //use csv::{Reader, Writer};
 //use std::error::Error;
 //use std::fs::OpenOptions;

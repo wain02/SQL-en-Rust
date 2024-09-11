@@ -1,13 +1,15 @@
 
+use crate::sql_conditions::SqlSelect;
 
-pub enum OperadoresLogicos {
-    AND, 
-    OR,
+#[derive(Debug)]
+pub enum SqlOperador {//OperadoresLogicos
+    And, //AND
+    Or, //OR
 }
 
-pub struct SqlPredicate{
-    condition: Vec<OperadoresLogicos>,
-    operador: Vec<OperadoresLogicos>,
+pub struct SqlCondicionesLogicas{//SqlPredicate
+    pub conditions: Vec<SqlSelect>,
+    pub logic_ops: Vec<SqlOperador>, //operadores
 }
 
 

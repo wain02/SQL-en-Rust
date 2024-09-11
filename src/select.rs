@@ -1,6 +1,10 @@
 
 //use crate::parciar::{regex_casero, parse_operadores};
-use crate::parciar::regex_casero;
+use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::sql_conditions::SqlSelect;
+use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
+
+
 use std::{fs, io::BufWriter};
 //use csv::{Reader, Writer};
 //use std::error::Error;
@@ -13,14 +17,14 @@ use std::io::{BufRead, BufReader, Write};
 //use csv::ReaderBuilder;
 
 
-#[derive(Debug)]
-
+//#[derive(Debug)]
+/* 
 struct SqlSelect{
     columna: String,
     operador: String,
     valor: String,
 }
-
+ 
 enum SqlOperador {
     And,
     Or,
@@ -30,7 +34,7 @@ pub struct SqlCondicionesLogicas {
     conditions: Vec<SqlSelect>,
     logic_ops: Vec<SqlOperador>, // Operadores entre las condiciones
 }
-
+*/
 pub fn comando_select(consulta_del_terminal: String){
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
 
@@ -75,7 +79,7 @@ pub fn comando_select(consulta_del_terminal: String){
 
 }
 
-
+/* 
 pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas {
     
     let mut conditions = Vec::new();
@@ -121,7 +125,7 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas 
     }
 
 }
-
+*/
 
 pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
     let mut index_vector_consulta = Vec::new();
@@ -173,7 +177,7 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
 
 }
 
-
+/* 
 fn evaluar_condiciones_logicas(
     columnas: &Vec<&str>, 
     index_condiciones: &Vec<(usize, &SqlSelect)>, 
@@ -207,9 +211,9 @@ fn unica_condition(columnas: &Vec<&str>, index: usize, condition: &SqlSelect) ->
     } else {
         false
     }
-}
+}*/
 
-
+/*  
 pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
     let operadores = ['>', '<', '='];
 
@@ -234,7 +238,7 @@ pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
     
     None
 }
-
+*/
 
 
 
