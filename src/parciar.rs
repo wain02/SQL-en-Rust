@@ -1,4 +1,5 @@
 use crate::sql_conditions::SqlSelect;
+
 use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
 
 pub fn regex_casero(sql: &str, claves: Vec<&str>) -> Vec<String> {
@@ -59,6 +60,7 @@ pub fn evaluar_condiciones_logicas(
     index_condiciones: &Vec<(usize, &SqlSelect)>, 
     condiciones_logicas: &SqlCondicionesLogicas
 ) -> bool {
+    
     let mut result = unica_condition(columnas, index_condiciones[0].0, index_condiciones[0].1);
 
     for (i, logic_op) in condiciones_logicas.logic_ops.iter().enumerate() {
@@ -76,7 +78,7 @@ pub fn evaluar_condiciones_logicas(
  pub fn unica_condition(columnas: &Vec<&str>, index: usize, condition: &SqlSelect) -> bool {
     let columna_valor = columnas[index].replace(" ", "").parse::<i32>();
     let valor_filtro_num = condition.valor.replace(";", "").replace(" ", "").parse::<i32>();
-
+    //actualemte solo puede comparar numeros, con strings rompe
     if let (Ok(col_val), Ok(filtro_val)) = (columna_valor, valor_filtro_num) {
         match condition.operador.as_str() {
             "mayor" => col_val > filtro_val,
@@ -85,6 +87,7 @@ pub fn evaluar_condiciones_logicas(
             _ => false,
         }
     } else {
+        println!("uno de los valores no es un numero");
         false
     }
 }

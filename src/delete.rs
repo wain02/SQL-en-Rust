@@ -1,9 +1,11 @@
 //cargo run -- ruta/a/tablas "DELETE FROM ordenes  WHERE producto = 'Laptop';"
 use std::{fs, io::BufWriter};
+use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
+use crate::sql_conditions::SqlSelect;
+
 //use csv::{Reader, Writer};
 //use std::error::Error;
-
-use crate::parciar::regex_casero;
 //use csv::Writer;
 //use std::fs::OpenOptions;
 use std::io;
@@ -13,24 +15,102 @@ use std::io::{BufRead, BufReader, Write};
 //use csv::ReaderBuilder;
 
 pub fn comando_delete(consulta_del_terminal: String){
-    
+    //DELETE FROM ordenes WHERE producto = 'Laptop';
     let mut where_delete: Vec<String> =  Vec::new();
-    let claves: Vec<&str> = vec!["DELETE", "FROM", "WHERE", "AND", "OR"];
+    let claves: Vec<&str> = vec!["DELETE", "FROM", "WHERE"];
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
-    let mut tabla = String::new(); 
-    let tablas: [&str; 2] = ["ordenes", "clientes"];
-    for condicion in condiciones_separadas {
-        
-        if tablas.contains(&condicion.as_str()){
-            tabla = format!("{}.csv", condicion);
-        }else{
-            where_delete.push(condicion);
-        }
+    let mut tabla_de_consulta = String::new(); 
+    
+    let tabla_leer = &condiciones_separadas[0];
+    let condicion = &condiciones_separadas[1];
+
+    match tabla_leer.as_str(){
+        "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
+        "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
+        _ => println!("la tabla ingresada no existe")
+    
     }
-   let _ = delete_csv(where_delete, tabla);
+    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1])else { todo!() };
+
+    let condiciones_logicas = parciar_condiciones_logicas(condicion);
+    println!("condiciones_logicas: {:?} ", condiciones_logicas);
+
+    //let mut vector_consulta_string: Vec<String> = Vec::new();
+    //let header_columnas: Vec<&str> = condiciones_separadas[0].trim().split_whitespace().collect();
+    //let mut vector_consulta: Vec<&str> = Vec::new();
+    
+    // let tablas: [&str; 2] = ["ordenes", "clientes"];
+    // for condicion in condiciones_separadas {
+        
+    //     if tablas.contains(&condicion.as_str()){
+    //         tabla = format!("{}.csv", condicion);
+    //     }else{
+    //         where_delete.push(condicion);
+    //     }
+    // }
+  //let _ = delete_csv(where_delete, tabla);
+  let _ = delete_csv(tabla_de_consulta, condiciones_logicas);
 }
 
 
+pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
+    let mut vector_consulta = Vec::new();
+    let mut index_vector_consulta = Vec::new();
+    let mut index_condiciones = Vec::new();
+    //let mut index = 0;
+
+    let input = BufReader::new(fs::File::open(&tabla)?);
+    let mut lines = input.lines();
+    let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
+
+    
+    //let mut contador_columnas = 0;
+    if let Some(Ok(header)) = &lines.next() {
+        let columnas_archivo: Vec<&str> = header.split(',').collect(); 
+              
+        for (contador_columnas, columna) in columnas_archivo.iter().enumerate() {
+            let columna = columna.trim();
+            if vector_consulta.is_empty() {
+                index_vector_consulta.push(contador_columnas);
+            }
+            else if vector_consulta.contains(&columna.to_string()) {
+                index_vector_consulta.push(contador_columnas);
+                
+            }
+            for cond in &condiciones_logicas.conditions {
+                if cond.columna.trim() == columna.trim() {
+                    index_condiciones.push((contador_columnas, cond));
+                }
+            } 
+        }
+    }
+    
+    if index_condiciones.is_empty() {
+        eprintln!("Error: No se encontraron coincidencias para las condiciones.");
+        return Ok(());  // Salir sin realizar ninguna acción si no hay coincidencias
+    }
+
+    for line in lines {
+        let line = line?;
+        let columnas: Vec<&str> = line.split(',').collect();
+        if evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
+            println!("Se eliminaron los datos");
+        }else{
+            //writeln!(archivo_output, "{}", line)?;
+            let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
+            writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
+        }
+    }
+    fs::rename("output.csv", tabla)?;
+    Ok(())
+
+}
+
+
+
+
+
+/* 
 pub fn delete_csv(vec_delete: Vec<String>, tabla_delelete: String) -> io::Result<()> { //del_csv: Vec<&str>
     
     let mut target =  String::new();
@@ -75,4 +155,4 @@ pub fn delete_csv(vec_delete: Vec<String>, tabla_delelete: String) -> io::Result
     }
     fs::rename("archivo_copia.csv", tabla_delelete)?;
     Ok(())
-}
+}*/
