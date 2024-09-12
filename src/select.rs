@@ -39,6 +39,8 @@ pub fn comando_select(consulta_del_terminal: String){
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
 
     let claves: Vec<&str> = vec!["WHERE", "SELECT", "FROM"];
+    consulta_del_terminal.replace(",", ""); //si rompe es por esto
+
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
 
     let mut tabla_de_consulta = String::new();

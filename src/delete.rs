@@ -17,6 +17,7 @@ use std::io::{BufRead, BufReader, Write};
 pub fn comando_delete(consulta_del_terminal: String){
     //DELETE FROM ordenes WHERE producto = 'Laptop';
     let mut where_delete: Vec<String> =  Vec::new();
+    consulta_del_terminal.replace(",", ""); //si rompe es por esto
     let claves: Vec<&str> = vec!["DELETE", "FROM", "WHERE"];
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
     let mut tabla_de_consulta = String::new(); 
@@ -31,7 +32,7 @@ pub fn comando_delete(consulta_del_terminal: String){
     
     }
     let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1])else { todo!() };
-
+    
     let condiciones_logicas = parciar_condiciones_logicas(condicion);
     println!("condiciones_logicas: {:?} ", condiciones_logicas);
 

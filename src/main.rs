@@ -18,8 +18,9 @@ mod sql_conditions;
 fn main() {
     let terminal: Vec<String> = std::env::args().collect();
     let consulta_terminal = &terminal[2]; //consulta completa de SQL
-    let consulta = consulta_terminal.replace(",", "").replace("\n", " "); 
-    
+    //let consulta = consulta_terminal.replace(",", "").replace("\n", " "); 
+    let consulta = consulta_terminal.replace("\n", " "); 
+
 
     let mut partes_consulta: Vec<&str> = consulta.trim().split_whitespace().collect(); // Divide la cadena en partes
     let instruccion = partes_consulta[0];
