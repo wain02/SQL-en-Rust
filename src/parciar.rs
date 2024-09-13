@@ -102,7 +102,7 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas 
     let binding = condicion_raw
         .replace(" AND ", "|AND|")
         .replace(" OR ", "|OR|");
-        let partes_and_or: Vec<&str> = binding.split('|').collect();
+    let partes_and_or: Vec<&str> = binding.split('|').collect();
 
     //let partes_and_or: Vec<&str> = condicion_raw.split_whitespace().collect();
     let mut i = 0;
