@@ -60,7 +60,10 @@ pub fn evaluar_condiciones_logicas(
     index_condiciones: &Vec<(usize, &SqlSelect)>, 
     condiciones_logicas: &SqlCondicionesLogicas
 ) -> bool {
-    
+    if index_condiciones.is_empty() {
+        eprintln!("Error: No se encontraron condiciones para evaluar.");
+        return false;
+    }
     let mut result = unica_condition(columnas, index_condiciones[0].0, index_condiciones[0].1);
 
     for (i, logic_op) in condiciones_logicas.logic_ops.iter().enumerate() {
@@ -87,7 +90,7 @@ pub fn evaluar_condiciones_logicas(
             _ => false,
         }
     } else {
-        println!("uno de los valores no es un numero");
+        eprintln!("Error: Uno de los valores no es un número.");
         false
     }
 }
@@ -125,7 +128,7 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas 
                     valor,
                 });
             } else {
-                println!("Error al parsear la condición: {}", parte);  // Depuración
+                eprintln!("Error al parsear la condición: {}", parte);  // Depuración
             }
         }
 

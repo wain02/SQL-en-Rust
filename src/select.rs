@@ -3,6 +3,7 @@
 use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
 use crate::sql_conditions::SqlSelect;
 use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
+use crate::errores::SQLError;
 
 
 use std::{fs, io::BufWriter};
@@ -35,13 +36,24 @@ pub struct SqlCondicionesLogicas {
     logic_ops: Vec<SqlOperador>, // Operadores entre las condiciones
 }
 */
-pub fn comando_select(consulta_del_terminal: String){
+pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
-
+    if !consulta_del_terminal.contains("SELECT") || !consulta_del_terminal.contains("FROM") {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
+    
     let claves: Vec<&str> = vec!["WHERE", "SELECT", "FROM"];
     consulta_del_terminal.replace(",", ""); //si rompe es por esto
 
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
+
+    if condiciones_separadas.len() < 3 {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
 
     let mut tabla_de_consulta = String::new();
     
@@ -53,14 +65,22 @@ pub fn comando_select(consulta_del_terminal: String){
     match tabla_leer.as_str(){
         "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
         "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
-        _ => println!("la tabla ingresada no existe")
+        _ => {
+            let error = SQLError::new("INVALID_TABLE");
+            println!("Error: {}", error);
+            return Err(error);
+        }
     
     }
     let mut vector_consulta_string: Vec<String> = Vec::new();
     //let mut vec_filtro_string: Vec<String> = Vec::new();
 
     
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else { todo!() };
+    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    };
         // let struct_filtro = SqlSelect {
         //     columna: columna_filtro,
         //     operador: operador_valor,
@@ -78,6 +98,7 @@ pub fn comando_select(consulta_del_terminal: String){
     }
 
     let _ = select_csv(tabla_de_consulta, vector_consulta_string, condiciones_logicas);
+    Ok(())
 
 }
 

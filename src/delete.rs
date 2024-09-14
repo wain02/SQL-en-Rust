@@ -3,23 +3,32 @@ use std::{fs, io::BufWriter};
 use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
 use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
 use crate::sql_conditions::SqlSelect;
-
-//use csv::{Reader, Writer};
-//use std::error::Error;
-//use csv::Writer;
-//use std::fs::OpenOptions;
+use crate::errores::SQLError;
 use std::io;
-
-//use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
-//use csv::ReaderBuilder;
 
-pub fn comando_delete(consulta_del_terminal: String){
+
+
+pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
     //DELETE FROM ordenes WHERE producto = 'Laptop';
+    println!("consulta_del_terminal: {:?}", consulta_del_terminal);
+    if !consulta_del_terminal.contains("DELETE FROM") || !consulta_del_terminal.contains("WHERE") {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
+
     let mut where_delete: Vec<String> =  Vec::new();
     consulta_del_terminal.replace(",", ""); //si rompe es por esto
     let claves: Vec<&str> = vec!["DELETE", "FROM", "WHERE"];
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
+    
+    if condiciones_separadas.len() < 2 {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
+
     let mut tabla_de_consulta = String::new(); 
     
     let tabla_leer = &condiciones_separadas[0];
@@ -28,13 +37,20 @@ pub fn comando_delete(consulta_del_terminal: String){
     match tabla_leer.as_str(){
         "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
         "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
-        _ => println!("la tabla ingresada no existe")
+        _ => {
+            let error = SQLError::new("INVALID_TABLE");
+            println!("Error: {}", error);
+            return Err(error);
+        }
     
     }
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1])else { todo!() };
+    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1])else {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    };
     
     let condiciones_logicas = parciar_condiciones_logicas(condicion);
-    println!("condiciones_logicas: {:?} ", condiciones_logicas);
 
     //let mut vector_consulta_string: Vec<String> = Vec::new();
     //let header_columnas: Vec<&str> = condiciones_separadas[0].trim().split_whitespace().collect();
@@ -51,6 +67,7 @@ pub fn comando_delete(consulta_del_terminal: String){
     // }
   //let _ = delete_csv(where_delete, tabla);
   let _ = delete_csv(tabla_de_consulta, condiciones_logicas);
+  Ok(())
 }
 
 

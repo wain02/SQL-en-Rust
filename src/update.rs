@@ -5,12 +5,25 @@ use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
 use crate::sql_conditions::SqlSelect;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
+use crate::errores::SQLError;
 
-pub fn comando_update(consulta_del_terminal: String){
+pub fn comando_update(consulta_del_terminal: String) -> Result<(), SQLError> {
     //UPDATE clientes SET email = 'mrodriguez@hotmail.com' WHERE id = 4;
+
+    if !consulta_del_terminal.contains("UPDATE") || !consulta_del_terminal.contains("SET") || !consulta_del_terminal.contains("WHERE") {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
 
     let claves: Vec<&str> = vec!["UPDATE", "SET", "WHERE"];
     let mut condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
+
+    if condiciones_separadas.len() < 3 {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    }
 
     let tabla_leer = &condiciones_separadas[0];
     let condicion = &condiciones_separadas[2];
@@ -21,17 +34,31 @@ pub fn comando_update(consulta_del_terminal: String){
     match tabla_leer.as_str(){
         "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
         "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
-        _ => println!("la tabla ingresada no existe")
+        _ => {
+            let error = SQLError::new("INVALID_TABLE");
+            println!("Error: {}", error);
+            return Err(error);
+        }
     
     }
 
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else { todo!() };
+    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    };
     let condiciones_logicas = parciar_condiciones_logicas(condicion);
 
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1].replace(","," AND "))else { todo!() };
+    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1].replace(","," AND "))else {
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        return Err(error);
+    };
+
     let condiciones_editar = parciar_condiciones_logicas(&editar);
     
     let _ =  update_csv(tabla_de_consulta, condiciones_editar, condiciones_logicas);
+    Ok(())
 
 }
 
