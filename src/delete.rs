@@ -11,7 +11,7 @@ use std::io::{BufRead, BufReader, Write};
 
 pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
     //DELETE FROM ordenes WHERE producto = 'Laptop';
-    println!("consulta_del_terminal: {:?}", consulta_del_terminal);
+    //println!("consulta_del_terminal: {:?}", consulta_del_terminal);
     if !consulta_del_terminal.contains("DELETE FROM") || !consulta_del_terminal.contains("WHERE") {
         let error = SQLError::new("INVALID_SYNTAX");
         println!("Error: {}", error);
@@ -52,22 +52,8 @@ pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
     
     let condiciones_logicas = parciar_condiciones_logicas(condicion);
 
-    //let mut vector_consulta_string: Vec<String> = Vec::new();
-    //let header_columnas: Vec<&str> = condiciones_separadas[0].trim().split_whitespace().collect();
-    //let mut vector_consulta: Vec<&str> = Vec::new();
-    
-    // let tablas: [&str; 2] = ["ordenes", "clientes"];
-    // for condicion in condiciones_separadas {
-        
-    //     if tablas.contains(&condicion.as_str()){
-    //         tabla = format!("{}.csv", condicion);
-    //     }else{
-    //         where_delete.push(condicion);
-    //     }
-    // }
-  //let _ = delete_csv(where_delete, tabla);
-  let _ = delete_csv(tabla_de_consulta, condiciones_logicas);
-  Ok(())
+    let _ = delete_csv(tabla_de_consulta, condiciones_logicas);
+    Ok(())
 }
 
 

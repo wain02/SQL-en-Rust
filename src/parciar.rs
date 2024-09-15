@@ -27,7 +27,6 @@ pub fn regex_casero(sql: &str, claves: Vec<&str>) -> Vec<String> {
 }
 
 
-
 pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
     let operadores = ['>', '<', '='];
 
@@ -79,10 +78,15 @@ pub fn evaluar_condiciones_logicas(
 
 
  pub fn unica_condition(columnas: &Vec<&str>, index: usize, condition: &SqlSelect) -> bool {
-    let columna_valor = columnas[index].replace(" ", "").parse::<i32>();
-    let valor_filtro_num = condition.valor.replace(";", "").replace(" ", "").parse::<i32>();
-    //actualemte solo puede comparar numeros, con strings rompe
-    if let (Ok(col_val), Ok(filtro_val)) = (columna_valor, valor_filtro_num) {
+    let columna_valor = columnas[index].replace(" ", "");
+    let valor_filtro = condition.valor.replace(";", "").replace(" ", "").replace("'", "");
+
+    // convertir los dos valores a numros
+    let columna_num = columna_valor.parse::<i32>();
+    let filtro_num = valor_filtro.parse::<i32>();
+
+    if let (Ok(col_val), Ok(filtro_val)) = (columna_num, filtro_num) {
+        // Si son números, realizo la comparación
         match condition.operador.as_str() {
             "mayor" => col_val > filtro_val,
             "menor" => col_val < filtro_val,
@@ -90,8 +94,12 @@ pub fn evaluar_condiciones_logicas(
             _ => false,
         }
     } else {
-        eprintln!("Error: Uno de los valores no es un número.");
-        false
+        // Si no son números, realizo la comparación
+        //println!("columna_valor: {} valor_filtro: {}", columna_valor, valor_filtro);
+        match condition.operador.as_str() {
+            "igual" => columna_valor == valor_filtro,
+            _ => false,
+        }
     }
 }
 

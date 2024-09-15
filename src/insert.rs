@@ -79,11 +79,6 @@ pub fn comando_insert(consulta_inst_terminal: String)  -> Result<(),SQLError>{
 } 
 
 pub fn write_csv(insert: Vec<&str>, tabla: String) -> io::Result<()>{
-    // if !std::path::Path::new(&tabla).exists() {
-    //     let error = SQLError::new("INVALID_TABLE");
-    //     println!("Error: {}", error);
-    //     Err(error);
-    // }
 
     // Abre el archivo en modo append
     let file = OpenOptions::new()
