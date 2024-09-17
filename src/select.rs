@@ -1,7 +1,6 @@
 //use crate::parciar::{regex_casero, parse_operadores};
-use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
-use crate::sql_conditions::SqlSelect;
-use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
+use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::sql_predicate::{SqlCondicionesLogicas};
 use crate::errores::SQLError;
 
 
@@ -17,7 +16,7 @@ use std::io::{BufRead, BufReader, Write};
 //use csv::ReaderBuilder;
 
 #[derive(Debug)]
-struct OrderBy {
+pub struct OrderBy {
     columna: String,
     orden: String,
 }
@@ -71,7 +70,7 @@ pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
     }
     
     let claves: Vec<&str> = vec!["WHERE", "SELECT", "FROM"];
-    consulta_principal.replace(",", ""); //si rompe es por esto
+    //consulta_principal.replace(",", ""); //si rompe es por esto
 
     let condiciones_separadas = regex_casero(&consulta_principal, claves);
     println!("{:?}", condiciones_separadas);
@@ -140,7 +139,7 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
     //let mut index = 0;
-    //let mut rows = Vec::new();
+    let mut rows = Vec::new();
 
     let input = BufReader::new(fs::File::open(&tabla)?);
     let mut lines = input.lines();
@@ -187,32 +186,35 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
         let columnas: Vec<&str> = line.split(',').collect();
         if condiciones_logicas.conditions.is_empty() || evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
             let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
-            writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
+            //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
             
             //let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
-            //rows.push(columnas);
+            rows.push(line);
             //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
 
         }
         
         
     }
-    /*if let Some(index) = order_by_index {
+    //println!("{:?}", rows);
+    if let Some(index) = order_by_index {
         rows.sort_by(|a, b| {
+            let a_columnas: Vec<&str> = a.split(',').collect();
+            let b_columnas: Vec<&str> = b.split(',').collect();
             if order_by_asc {
-                a[index].cmp(&b[index])
+                a_columnas[index].cmp(&b_columnas[index])
             } else {
-                b[index].cmp(&a[index])
+                b_columnas[index].cmp(&a_columnas[index])
             }
         });
     }
-
     
-    for columnas in rows {
+    for line in rows {
+        let columnas: Vec<&str> = line.split(',').collect();
         let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
         writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
-    }*/
-
+    }
+ 
     Ok(())
 
 }

@@ -1,14 +1,16 @@
 //cargo run -- ruta/a/tablas "DELETE FROM ordenes  WHERE producto = 'Laptop';"
 use std::{fs, io::BufWriter};
-use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
-use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
-use crate::sql_conditions::SqlSelect;
+use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::sql_predicate::SqlCondicionesLogicas;
 use crate::errores::SQLError;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
 
-
-
+/*pub struct DeleteSQL{
+    tabla: String,
+    condiciones: SqlCondicionesLogicas,
+}
+ */
 pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
     //DELETE FROM ordenes WHERE producto = 'Laptop';
     //println!("consulta_del_terminal: {:?}", consulta_del_terminal);
@@ -18,8 +20,8 @@ pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
         return Err(error);
     }
 
-    let mut where_delete: Vec<String> =  Vec::new();
-    consulta_del_terminal.replace(",", ""); //si rompe es por esto
+    //let where_delete: Vec<String> =  Vec::new();
+    //consulta_del_terminal.replace(",", ""); 
     let claves: Vec<&str> = vec!["DELETE", "FROM", "WHERE"];
     let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
     
@@ -58,7 +60,7 @@ pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
 
 
 pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
-    let mut vector_consulta = Vec::new();
+    let vector_consulta = Vec::new();
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
     //let mut index = 0;
@@ -111,8 +113,11 @@ pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> i
 }
 
 
-
-
+/*#[test]
+fn test_delete_basico() {
+    let builder = Self::new().consulta_del_terminal("DELETE FROM ordenes WHERE producto = 'Laptop';");
+    println!("Helado con cucharita: {:?}", builder.build());
+} */
 
 /* 
 pub fn delete_csv(vec_delete: Vec<String>, tabla_delelete: String) -> io::Result<()> { //del_csv: Vec<&str>

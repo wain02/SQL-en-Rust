@@ -1,11 +1,11 @@
 
 use std::fs::OpenOptions;
-use std::{fs, io::BufWriter};
-use std::io::{BufRead, BufReader, Write};
-use csv::Writer;
-use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
-use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
-use crate::sql_conditions::SqlSelect;
+use std::{io::BufWriter};
+use std::io::{Write};
+//use csv::Writer;
+//use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+//use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
+//use crate::sql_conditions::SqlSelect;
 use std::io;
 use crate::errores::SQLError;
 
@@ -55,7 +55,7 @@ pub fn comando_insert(consulta_inst_terminal: String)  -> Result<(),SQLError>{
 
     let mut tabla_de_consulta = String::new(); 
 
-    let mut tabla_insert = columas_insert[0];
+    let tabla_insert = columas_insert[0];
     match tabla_insert{
         "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
         "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
@@ -72,7 +72,11 @@ pub fn comando_insert(consulta_inst_terminal: String)  -> Result<(),SQLError>{
     //     eprintln!("Error writing to CSV: {}", e);
     // }
     
-    write_csv(valores_insert, tabla_de_consulta);
+    match write_csv(valores_insert, tabla_de_consulta){
+        Ok(_) => println!("Datos escritos correctamente en el csv"),
+        Err(e) => eprintln!("Error escribiendo el CSV: {}", e),
+    }
+
     Ok(())
 
     //write_csv(valores_insert, tabla_de_consulta);

@@ -1,8 +1,7 @@
 //cargo run -- ruta/a/tablas "UPDATE clientes SET email = 'mrodriguez@hotmail.com', nombre = 'Sol' WHERE id = 4;"
 use std::{fs, io::BufWriter};
-use crate::parciar::{regex_casero, parse_operadores, unica_condition, evaluar_condiciones_logicas, parciar_condiciones_logicas};
-use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
-use crate::sql_conditions::SqlSelect;
+use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::sql_predicate::SqlCondicionesLogicas;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
 use crate::errores::SQLError;
@@ -17,7 +16,7 @@ pub fn comando_update(consulta_del_terminal: String) -> Result<(), SQLError> {
     }
 
     let claves: Vec<&str> = vec!["UPDATE", "SET", "WHERE"];
-    let mut condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
+    let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
 
     if condiciones_separadas.len() < 3 {
         let error = SQLError::new("INVALID_SYNTAX");

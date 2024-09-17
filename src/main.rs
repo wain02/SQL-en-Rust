@@ -19,28 +19,32 @@ fn main() {
     let instruccion = partes_consulta[0];
     partes_consulta.remove(0);
 
-    if instruccion.to_uppercase().as_str() == "INSERT" {
-        //INSERT INTO ordenes (id, id_cliente, producto, cantidad) VALUES (111, 6, 'Laptop', 3);
-        let consulta_ref = &consulta;
-        insert::comando_insert(consulta_ref.to_string());  
-    }
 
-    if instruccion.to_uppercase().as_str() == "UPDATE" {
-        let consulta_ref = &consulta;
-        update::comando_update(consulta_ref.to_string());
+    match instruccion.to_uppercase().as_str() {
+        "INSERT" => {
+            //INSERT INTO ordenes (id, id_cliente, producto, cantidad) VALUES (111, 6, 'Laptop', 3);
+            let consulta_ref = &consulta;
+            let _ = insert::comando_insert(consulta_ref.to_string()); 
 
-    }
-    if instruccion.to_uppercase().as_str() == "DELETE" {
-        //DELETE FROM contact WHERE person_id IN (SELECT id FROM person WHERE  place_of_birth = 'San Francisco');
-        //DELETE FROM person WHERE lastname = 'Burton';
-        let consulta_ref = &consulta;
-        delete::comando_delete(consulta_ref.to_string());
-
-        
-    }
-    if instruccion.to_uppercase().as_str() == "SELECT" {
-        let consulta_ref = &consulta;
-        select::comando_select(consulta_ref.to_string());
+        },
+        "UPDATE" => {
+            let consulta_ref = &consulta;
+            let _ = update::comando_update(consulta_ref.to_string());
+        },
+        "DELETE" => {
+            //DELETE FROM contact WHERE person_id IN (SELECT id FROM person WHERE  place_of_birth = 'San Francisco');
+            //DELETE FROM person WHERE lastname = 'Burton';
+            let consulta_ref = &consulta;
+            let _ = delete::comando_delete(consulta_ref.to_string());
+        },
+        "SELECT" => {
+            let consulta_ref = &consulta;
+            let _ = select::comando_select(consulta_ref.to_string());
+        },
+        _ => {
+            println!("Instrucción no válida");
+            return;
+        }
     }
 
 }
