@@ -7,15 +7,6 @@ mod sql_predicate;
 mod sql_conditions;
 mod errores;
 
-//use csv::{Reader, Writer};
-//use std::error::Error;
-//use std::fs::OpenOptions;
-//use std::io;
-//use std::fs::File;
-//use std::io::{BufRead, BufReader, Write};
-//use std::collections::HashMap;
-//use std::{fs, io::BufWriter};
-
 
 fn main() {
     let terminal: Vec<String> = std::env::args().collect();
