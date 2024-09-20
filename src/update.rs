@@ -1,127 +1,143 @@
-//cargo run -- ruta/a/tablas "UPDATE clientes SET email = 'mrodriguez@hotmail.com', nombre = 'Sol' WHERE id = 4;"
-use std::{fs, io::BufWriter};
-use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::parciar::{regex_casero, evaluar_condiciones_logicas, parciar_condiciones_logicas};
 use crate::sql_predicate::SqlCondicionesLogicas;
-use std::io;
-use std::io::{BufRead, BufReader, Write};
 use crate::errores::SQLError;
+use std::{fs, io::BufWriter};
+use std::io::{self, BufRead, BufReader, Write};
+use crate::sql_conditions::SqlSelect;
+
+#[derive(Debug)]
+pub struct UpdateSql {
+    tabla: String,
+    set: Vec<(String, String)>,
+    where_conditions: Option<SqlCondicionesLogicas>,
+}
 
 pub fn comando_update(consulta_del_terminal: String) -> Result<(), SQLError> {
-    //UPDATE clientes SET email = 'mrodriguez@hotmail.com' WHERE id = 4;
-
-    if !consulta_del_terminal.contains("UPDATE") || !consulta_del_terminal.contains("SET") || !consulta_del_terminal.contains("WHERE") {
+    if !consulta_del_terminal.contains("UPDATE") || !consulta_del_terminal.contains("SET") {
         let error = SQLError::new("INVALID_SYNTAX");
         println!("Error: {}", error);
         return Err(error);
     }
-
-    let claves: Vec<&str> = vec!["UPDATE", "SET", "WHERE"];
-    let condiciones_separadas = regex_casero(&consulta_del_terminal, claves);
-
-    if condiciones_separadas.len() < 3 {
+    let mut consulta_principal = consulta_del_terminal.trim().to_string();
+    let condiciones_separadas = regex_casero(&consulta_principal, vec!["WHERE", "UPDATE", "SET"]);
+    if condiciones_separadas.len() < 2 {
         let error = SQLError::new("INVALID_SYNTAX");
         println!("Error: {}", error);
         return Err(error);
     }
-
-    let tabla_leer = &condiciones_separadas[0];
-    let condicion = &condiciones_separadas[2];
-    let editar = condiciones_separadas[1].replace(","," AND ");
-
-    let mut tabla_de_consulta = String::new();
-
-    match tabla_leer.as_str(){
-        "ordenes" => tabla_de_consulta = "ordenes.csv".to_string(),
-        "clientes" =>tabla_de_consulta = "clientes.csv".to_string(),
-        _ => {
-            let error = SQLError::new("INVALID_TABLE");
-            println!("Error: {}", error);
-            return Err(error);
-        }
-    
-    }
-
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[2])else {
-        let error = SQLError::new("INVALID_SYNTAX");
-        println!("Error: {}", error);
-        return Err(error);
-    };
-    let condiciones_logicas = parciar_condiciones_logicas(condicion);
-
-    let Some((columna_filtro, operador_valor , valor_filtro)) = parse_operadores(&condiciones_separadas[1].replace(","," AND "))else {
-        let error = SQLError::new("INVALID_SYNTAX");
-        println!("Error: {}", error);
-        return Err(error);
-    };
-
-    let condiciones_editar = parciar_condiciones_logicas(&editar);
-    
-    let _ =  update_csv(tabla_de_consulta, condiciones_editar, condiciones_logicas);
+    let consulta_sql = crear_consulta_update(condiciones_separadas)?;
+    let _ = update_csv(consulta_sql);
     Ok(())
+}
 
+pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
+    
+    let input = BufReader::new(fs::File::open(&consulta.tabla)?);
+    let mut lineas = input.lines();
+    let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
+
+    let mut rows = Vec::new();
+    let mut header = String::new();
+    let mut index_condiciones = Vec::new();
+    let mut index_editar = Vec::new();
+
+    if let Some(Ok(line)) = lineas.next() {
+        writeln!(archivo_output, "{}", line)?;
+        header = line;
+        rows.push(&header);
+        let columnas: Vec<&str> = header.split(',').collect();
+        for (i, columna) in columnas.iter().enumerate() {
+            let columna = columna.trim().to_string();
+            if let Some(where_conditions) = &consulta.where_conditions {
+                for cond in &where_conditions.conditions {
+                    if cond.columna.trim() == columna {
+                        index_condiciones.push((i, cond));
+                    }
+                }
+            }
+            for edit in &consulta.set {
+                let col = &edit.0;
+                if *col == columna {
+                    let valor_edir = &edit.1;
+                    index_editar.push((i, &edit.1));
+                }
+            }
+        }
+    }
+    escribir_resultado(&mut archivo_output, &mut lineas, &consulta, &index_condiciones, &index_editar)?;
+    Ok(())
 }
 
 
-pub fn update_csv(tabla: String , condiciones_editar: SqlCondicionesLogicas, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
-    
-    let mut index_condiciones_editar = Vec::new();
-    let mut index_condiciones = Vec::new();
-
-    let input = BufReader::new(fs::File::open(&tabla)?);
-    let mut lines = input.lines();
-    let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
-   
-    if let Some(Ok(header)) = &lines.next() {
-        let columnas_archivo: Vec<&str> = header.split(',').collect(); 
+pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>, 
+    lineas: &mut std::io::Lines<BufReader<fs::File>>, 
+    consulta: &UpdateSql, 
+    index_condiciones:&Vec<(usize, &SqlSelect)>, 
+    index_editar:&Vec<(usize, &String)>
+) -> io::Result<()> {
+    for linea_actual in lineas {
+        let line = linea_actual?;
+        let columnas: Vec<&str> = line.split(',').collect();
+        let where_conditions = &consulta.where_conditions;
         
-        writeln!(archivo_output, "{}", header)?; //escribo el header en el archivo output
-
-        for (contador_columnas, columna) in columnas_archivo.iter().enumerate() {
-            let columna = columna.trim();
-            for cond_editar in &condiciones_editar.conditions{
-                //for para guardar los datos que hay que editar
-                if cond_editar.columna.trim() == columna.trim() {
-                    index_condiciones_editar.push((contador_columnas, cond_editar));
-                }
-            }
+        if let Some(where_conditions) = where_conditions {
             
-            for cond in &condiciones_logicas.conditions {
-                //for para guardar los datos que hay que filtrar
-                if cond.columna.trim() == columna.trim() {
-                    index_condiciones.push((contador_columnas, cond));
-                }
-            } 
-        }
-    }
-    
-    if index_condiciones.is_empty() {
-        eprintln!("Error: No se encontraron coincidencias para las condiciones.");
-        return Ok(());  // Salir sin realizar ninguna acción si no hay coincidencias
-    }
-    if index_condiciones_editar.is_empty() {
-        eprintln!("Error: No se encontraron coincidencias para las condiciones a editar.");
-        return Ok(());  // Salir sin realizar ninguna acción si no hay coincidencias
-    }
-
-    for line in lines {
-        let line = line?;
-        let mut columnas: Vec<&str> = line.split(',').collect();
-        if evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
-            println!("se actualizo esta linea del csv");
-
-            for index in &index_condiciones_editar {
-                let valor_modificar = index.1;
-                columnas[index.0] = &valor_modificar.valor; 
-                
+            if where_conditions.conditions.is_empty()
+                || evaluar_condiciones_logicas(&columnas, &index_condiciones, &consulta.where_conditions.as_ref().unwrap())
+            {
+                let new_line = &actualizar_fila(&line, &consulta.set, &index_editar);
+                writeln!(archivo_output, "{}", new_line)?;
+            } else {
+                writeln!(archivo_output, "{}", line)?;
             }
-            let nueva_linea = columnas.join(",").replace("'","");
-            writeln!(archivo_output, "{nueva_linea}")?;
-            
-        }else{
+        } else {
             writeln!(archivo_output, "{}", line)?;
         }
     }
+    let tabla = &consulta.tabla;
+    println!("Se ha actualizado la tabla {}", tabla);
     fs::rename("output.csv", tabla)?;
     Ok(())
+}
 
+fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(usize, &String)>) -> String {
+    let mut columnas: Vec<&str> = line.split(',').collect();
+    for (columna, valor) in index_editar {
+        columnas[*columna] = valor;
+    }
+    columnas.join(",")
+
+}
+
+fn crear_consulta_update(condiciones_separadas: Vec<String>) -> Result<UpdateSql, SQLError> {
+    let tabla_de_consulta = match condiciones_separadas[0].replace(";", "").as_str() {
+        "ordenes" => "ordenes.csv".to_string(),
+        "clientes" => "clientes.csv".to_string(),
+        _ => return Err(SQLError::new("INVALID_TABLE")),
+    };
+    let set_clause = extraer_set(&condiciones_separadas[1]);
+
+    let condicion = if condiciones_separadas.len() > 2 {
+        &condiciones_separadas[2].replace(";", "").replace(",", " AND ")
+    } else {
+        "" // No hay condiciones
+    };
+    let condiciones_logicas = parciar_condiciones_logicas(condicion);
+    Ok(UpdateSql {
+        tabla: tabla_de_consulta,
+        set: set_clause,
+        where_conditions: Some(condiciones_logicas),
+    })
+}
+
+fn extraer_set(consulta_set: &str) -> Vec<(String, String)> {
+    let mut set_clause = vec![];
+    let sets: Vec<&str> = consulta_set.trim().split(',').collect();
+    for set in sets {
+        let partes: Vec<&str> = set.split('=').collect();
+        if partes.len() == 2 {
+            set_clause.push((partes[0].trim().to_string(), partes[1].trim().to_string()));
+        }
+    }
+    set_clause
 }

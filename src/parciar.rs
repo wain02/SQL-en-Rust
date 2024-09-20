@@ -1,5 +1,4 @@
 use crate::sql_conditions::SqlSelect;
-
 use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
 
 pub fn regex_casero(sql: &str, claves: Vec<&str>) -> Vec<String> {
@@ -56,7 +55,7 @@ pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
 
 pub fn evaluar_condiciones_logicas(
     columnas: &Vec<&str>, 
-    index_condiciones: &Vec<(usize, &SqlSelect)>, 
+    index_condiciones: &Vec<(usize, &SqlSelect)>, //&SqlSelect
     condiciones_logicas: &SqlCondicionesLogicas
 ) -> bool {
     if index_condiciones.is_empty() {
@@ -75,6 +74,7 @@ pub fn evaluar_condiciones_logicas(
 
     result
 }
+
 
 
  pub fn unica_condition(columnas: &Vec<&str>, index: usize, condition: &SqlSelect) -> bool {
