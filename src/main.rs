@@ -7,6 +7,7 @@ mod sql_predicate;
 mod sql_conditions;
 mod errores;
 mod main_tests;
+mod manejo_archivos;
 
 
 fn main() {

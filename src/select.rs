@@ -5,7 +5,7 @@ use crate::sql_conditions::SqlSelect;
 use std::{fs, io::BufWriter};
 use std::io;
 use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use crate::manejo_archivos::archivo;
 
 
 
@@ -203,13 +203,14 @@ fn escribir_resultado(
 
 fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Option<OrderBy>, direccion_archivo: String) -> Result<SelectSql, SQLError> {
     
-    let mut tabla_de_consulta: String = direccion_archivo.to_string();
+    let tabla_de_consulta = archivo(&condiciones_separadas[1].to_string(), &direccion_archivo.to_string())?;
+    /*let mut tabla_de_consulta: String = direccion_archivo.to_string();
     tabla_de_consulta.push_str("/");
     tabla_de_consulta.push_str(&condiciones_separadas[1].replace(";", ""));
     tabla_de_consulta.push_str(".csv");
     if !Path::new(&tabla_de_consulta).exists() {
         return Err(SQLError::new("INVALID_TABLE"));
-    }
+    }*/
 
     let selected_columns = extraer_columnas(&condiciones_separadas[0]);
 

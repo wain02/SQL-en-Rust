@@ -4,7 +4,8 @@ use crate::errores::SQLError;
 use std::{fs, io::BufWriter};
 use std::io::{self, BufRead, BufReader, Write};
 use crate::sql_conditions::SqlSelect;
-use std::path::Path;
+use crate::manejo_archivos::archivo;
+
 
 
 #[derive(Debug)]
@@ -114,13 +115,14 @@ fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(
 
 fn crear_consulta_update(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<UpdateSql, SQLError> {
     
-    let mut tabla_de_consulta: String = direccion_archivo.to_string();
+    let tabla_de_consulta = archivo(&condiciones_separadas[0], &direccion_archivo)?;
+    /*let mut tabla_de_consulta: String = direccion_archivo.to_string();
     tabla_de_consulta.push_str("/");
     tabla_de_consulta.push_str(&condiciones_separadas[0].replace(";", ""));
     tabla_de_consulta.push_str(".csv");
     if !Path::new(&tabla_de_consulta).exists() {
         return Err(SQLError::new("INVALID_TABLE"));
-    } 
+    } */
     
     let set_clause = extraer_set(&condiciones_separadas[1]);
 

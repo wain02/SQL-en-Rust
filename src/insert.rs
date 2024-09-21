@@ -4,7 +4,7 @@ use std::io::BufWriter;
 use std::io::Write;
 use std::io;
 use crate::errores::SQLError;
-use std::path::Path;
+use crate::manejo_archivos::archivo;
 
 //INSERT INTO ordenes (id, id_cliente, producto, cantidad) 
 //VALUES (111, 6, 'Laptop', 3),
@@ -74,7 +74,10 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
     columas_insert.remove(0);
     columas_insert.remove(0); 
 
-    let mut tabla: String = direccion_archivo.to_string();
+
+    let tabla = archivo(&columas_insert[0].to_string(), &direccion_archivo.to_string())?;
+
+    /*let mut tabla: String = direccion_archivo.to_string();
     tabla.push_str("/");
     tabla.push_str(&columas_insert[0].replace(";", ""));
     tabla.push_str(".csv");
@@ -82,7 +85,7 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
         println!("No existe la tabla");
         return Err(SQLError::new("INVALID_TABLE"));
     }
-
+*/
     /*let tabla_insert = columas_insert[0];
     let tabla = match tabla_insert {
         "ordenes"=> "ordenes.csv".to_string(),

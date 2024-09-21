@@ -6,7 +6,7 @@ use crate::errores::SQLError;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
 use crate::sql_conditions::SqlSelect;
-use std::path::Path;
+use crate::manejo_archivos::archivo;
 
 #[derive(Debug)]
 pub struct DeleteSQL {
@@ -101,15 +101,17 @@ fn escribir_delete(
 
 fn crear_consulta_delete(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<DeleteSQL, SQLError> {
     //let mut tabla = String::new(); 
-    
-    let mut tabla: String = direccion_archivo.to_string();
+
+    let tabla = archivo(&condiciones_separadas[0].to_string(), &direccion_archivo.to_string())?;
+
+    /*let mut tabla: String = direccion_archivo.to_string();
     tabla.push_str("/");
     tabla.push_str(&condiciones_separadas[0].replace(";", ""));
     tabla.push_str(".csv");
     if !Path::new(&tabla).exists() {
         println!("No existe la tabla");
         return Err(SQLError::new("INVALID_TABLE"));
-    }
+    }*/
 
     /*let tabla_de_consulta = condiciones_separadas[0].trim().to_string();
     match tabla_de_consulta.as_str(){
