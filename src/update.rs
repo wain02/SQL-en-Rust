@@ -4,6 +4,8 @@ use crate::errores::SQLError;
 use std::{fs, io::BufWriter};
 use std::io::{self, BufRead, BufReader, Write};
 use crate::sql_conditions::SqlSelect;
+use std::path::Path;
+
 
 #[derive(Debug)]
 pub struct UpdateSql {
@@ -12,7 +14,8 @@ pub struct UpdateSql {
     where_conditions: Option<SqlCondicionesLogicas>,
 }
 
-pub fn comando_update(consulta_del_terminal: String) -> Result<(), SQLError> {
+pub fn comando_update(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError> {
+
     if !consulta_del_terminal.contains("UPDATE") || !consulta_del_terminal.contains("SET") {
         let error = SQLError::new("INVALID_SYNTAX");
         println!("Error: {}", error);
@@ -25,7 +28,7 @@ pub fn comando_update(consulta_del_terminal: String) -> Result<(), SQLError> {
         println!("Error: {}", error);
         return Err(error);
     }
-    let consulta_sql = crear_consulta_update(condiciones_separadas)?;
+    let consulta_sql = crear_consulta_update(condiciones_separadas, direccion_archivo)?;
     let _ = update_csv(consulta_sql);
     Ok(())
 }
@@ -109,12 +112,16 @@ fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(
 
 }
 
-fn crear_consulta_update(condiciones_separadas: Vec<String>) -> Result<UpdateSql, SQLError> {
-    let tabla_de_consulta = match condiciones_separadas[0].replace(";", "").as_str() {
-        "ordenes" => "ordenes.csv".to_string(),
-        "clientes" => "clientes.csv".to_string(),
-        _ => return Err(SQLError::new("INVALID_TABLE")),
-    };
+fn crear_consulta_update(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<UpdateSql, SQLError> {
+    
+    let mut tabla_de_consulta: String = direccion_archivo.to_string();
+    tabla_de_consulta.push_str("/");
+    tabla_de_consulta.push_str(&condiciones_separadas[0].replace(";", ""));
+    tabla_de_consulta.push_str(".csv");
+    if !Path::new(&tabla_de_consulta).exists() {
+        return Err(SQLError::new("INVALID_TABLE"));
+    } 
+    
     let set_clause = extraer_set(&condiciones_separadas[1]);
 
     let condicion = if condiciones_separadas.len() > 2 {

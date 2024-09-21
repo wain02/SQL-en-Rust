@@ -4,6 +4,7 @@ use std::io::BufWriter;
 use std::io::Write;
 use std::io;
 use crate::errores::SQLError;
+use std::path::Path;
 
 //INSERT INTO ordenes (id, id_cliente, producto, cantidad) 
 //VALUES (111, 6, 'Laptop', 3),
@@ -21,9 +22,9 @@ pub struct InsertSql {
 }
 
         
-pub fn comando_insert(consulta_inst_terminal: String)  -> Result<(),SQLError>{
+pub fn comando_insert(consulta_inst_terminal: String, direccion_archivo: String)  -> Result<(),SQLError>{
     validar_insert(&consulta_inst_terminal)?;
-    let consulta_insertar = procesar_consulta(&consulta_inst_terminal)?;
+    let consulta_insertar = procesar_consulta(&consulta_inst_terminal, direccion_archivo)?;
     insert_csv(consulta_insertar);
     Ok(())
 
@@ -54,7 +55,7 @@ pub fn validar_insert(consulta: &str) -> Result<(), SQLError> {
 }
 
 
-pub fn procesar_consulta(consulta: &str) -> Result<InsertSql, SQLError> {
+pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<InsertSql, SQLError> {
     let consulta_limpia = consulta.replace("\n", " ").replace(";", "");
     
     let division_values: Vec<&str> = consulta_limpia.trim().split("VALUES").collect();
@@ -73,13 +74,22 @@ pub fn procesar_consulta(consulta: &str) -> Result<InsertSql, SQLError> {
     columas_insert.remove(0);
     columas_insert.remove(0); 
 
-    let tabla_insert = columas_insert[0];
+    let mut tabla: String = direccion_archivo.to_string();
+    tabla.push_str("/");
+    tabla.push_str(&columas_insert[0].replace(";", ""));
+    tabla.push_str(".csv");
+    if !Path::new(&tabla).exists() {
+        println!("No existe la tabla");
+        return Err(SQLError::new("INVALID_TABLE"));
+    }
+
+    /*let tabla_insert = columas_insert[0];
     let tabla = match tabla_insert {
         "ordenes"=> "ordenes.csv".to_string(),
         "clientes" => "clientes.csv".to_string(),
         _ => return Err(SQLError::new("INVALID_TABLE")),
     };
-
+*/
     columas_insert.remove(0);
 
     let columas_insert: Vec<String> = columas_insert.into_iter().map(|s| s.to_string()).collect();

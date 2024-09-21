@@ -5,6 +5,7 @@ use crate::sql_conditions::SqlSelect;
 use std::{fs, io::BufWriter};
 use std::io;
 use std::io::{BufRead, BufReader, Write};
+use std::path::Path;
 
 
 
@@ -34,7 +35,7 @@ pub enum Orden {
 
 
 
-pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
+pub fn comando_select(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError> {
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
     if !consulta_del_terminal.contains("SELECT") || !consulta_del_terminal.contains("FROM") {
         let error = SQLError::new("INVALID_SYNTAX");
@@ -61,7 +62,7 @@ pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
         return Err(error);
     }
 
-    let consulta_sql = crear_consulta_select(condiciones_separadas, order_by_clau)?;
+    let consulta_sql = crear_consulta_select(condiciones_separadas, order_by_clau, direccion_archivo)?;
 
     let _ = select_csv(consulta_sql);
     Ok(())
@@ -104,6 +105,8 @@ fn procesar_header(lines: &mut std::io::Lines<BufReader<fs::File>>,consulta: &Se
 pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     let mut rows = Vec::new();
     let input = BufReader::new(fs::File::open(&consulta.tabla)?);
+    //let input = BufReader::new(fs::File::open("archivosCSV/ordenes.csv")?);
+
     let mut lineas = input.lines();
     let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
 
@@ -198,12 +201,16 @@ fn escribir_resultado(
 }
 
 
-fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Option<OrderBy>,) -> Result<SelectSql, SQLError> {
-    let tabla_de_consulta = match condiciones_separadas[1].replace(";", "").as_str() {
-        "ordenes" => "ordenes.csv".to_string(),
-        "clientes" => "clientes.csv".to_string(),
-        _ => return Err(SQLError::new("INVALID_TABLE")),
-    };
+fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Option<OrderBy>, direccion_archivo: String) -> Result<SelectSql, SQLError> {
+    
+    let mut tabla_de_consulta: String = direccion_archivo.to_string();
+    tabla_de_consulta.push_str("/");
+    tabla_de_consulta.push_str(&condiciones_separadas[1].replace(";", ""));
+    tabla_de_consulta.push_str(".csv");
+    if !Path::new(&tabla_de_consulta).exists() {
+        return Err(SQLError::new("INVALID_TABLE"));
+    }
+
     let selected_columns = extraer_columnas(&condiciones_separadas[0]);
 
     let condicion = if condiciones_separadas.len() > 2 {

@@ -6,6 +6,7 @@ use crate::errores::SQLError;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
 use crate::sql_conditions::SqlSelect;
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct DeleteSQL {
@@ -14,7 +15,7 @@ pub struct DeleteSQL {
 }
 
 
-pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
+pub fn comando_delete(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError>{
     //DELETE FROM ordenes WHERE producto = 'Laptop';
     if !consulta_del_terminal.contains("DELETE FROM") || !consulta_del_terminal.contains("WHERE") {
         let error = SQLError::new("INVALID_SYNTAX");
@@ -30,7 +31,7 @@ pub fn comando_delete(consulta_del_terminal: String) -> Result<(), SQLError>{
         return Err(error);
     }
 
-    let consulta_sql = crear_consulta_delete(condiciones_separadas)?;
+    let consulta_sql = crear_consulta_delete(condiciones_separadas, direccion_archivo)?;
     let _ = delete_csv(consulta_sql.tabla, consulta_sql.where_conditions);
     Ok(())
 }
@@ -98,10 +99,19 @@ fn escribir_delete(
     Ok(())
 }
 
-fn crear_consulta_delete(condiciones_separadas: Vec<String>) -> Result<DeleteSQL, SQLError> {
-    let mut tabla = String::new(); 
-    let tabla_de_consulta = condiciones_separadas[0].trim().to_string();
+fn crear_consulta_delete(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<DeleteSQL, SQLError> {
+    //let mut tabla = String::new(); 
     
+    let mut tabla: String = direccion_archivo.to_string();
+    tabla.push_str("/");
+    tabla.push_str(&condiciones_separadas[0].replace(";", ""));
+    tabla.push_str(".csv");
+    if !Path::new(&tabla).exists() {
+        println!("No existe la tabla");
+        return Err(SQLError::new("INVALID_TABLE"));
+    }
+
+    /*let tabla_de_consulta = condiciones_separadas[0].trim().to_string();
     match tabla_de_consulta.as_str(){
         "ordenes" => tabla = "ordenes.csv".to_string(),
         "clientes" =>tabla = "clientes.csv".to_string(),
@@ -110,7 +120,7 @@ fn crear_consulta_delete(condiciones_separadas: Vec<String>) -> Result<DeleteSQL
             println!("Error: {}", error);
             return Err(error);
         }
-    }
+    }*/
     let where_conditions = parciar_condiciones_logicas(&condiciones_separadas[1].replace(";",""));
     Ok(DeleteSQL { tabla, where_conditions })
 }
