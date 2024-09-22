@@ -1,4 +1,4 @@
-//use crate::parciar::{regex_casero, parse_operadores};
+/*//use crate::parciar::{regex_casero, parse_operadores};
 use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
 use crate::sql_predicate::{SqlCondicionesLogicas};
 use crate::errores::SQLError;
@@ -20,7 +20,7 @@ pub struct OrderBy {
     columna: String,
     orden: String,
 }
-   
+ */  
 //#[derive(Debug)]
 /* 
 struct SqlSelect{
@@ -42,7 +42,7 @@ pub struct SqlCondicionesLogicas {
 
 
 
-pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
+/*pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
     if !consulta_del_terminal.contains("SELECT") || !consulta_del_terminal.contains("FROM") {
         let error = SQLError::new("INVALID_SYNTAX");
@@ -133,8 +133,6 @@ pub fn comando_select(consulta_del_terminal: String) -> Result<(), SQLError> {
 
 
 
-
-
 pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logicas: SqlCondicionesLogicas, order_by_clau:  Option<OrderBy>)-> io::Result<()>{
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
@@ -187,7 +185,6 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
         if condiciones_logicas.conditions.is_empty() || evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
             let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
             //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
-            
             //let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect();
             rows.push(line);
             //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
@@ -217,4 +214,4 @@ pub fn select_csv(tabla: String , vector_consulta: Vec<String>, condiciones_logi
  
     Ok(())
 
-}
+}*/

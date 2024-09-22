@@ -136,7 +136,7 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) ->SqlCondicionesLogicas 
                     valor,
                 });
             } else {
-                eprintln!("Error al parsear la condición: {}", parte);  // Depuración
+                eprintln!("No hay condiciónes: {}", parte);  // Depuración
             }
         }
 

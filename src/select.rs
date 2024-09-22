@@ -108,7 +108,7 @@ pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     //let input = BufReader::new(fs::File::open("archivosCSV/ordenes.csv")?);
 
     let mut lineas = input.lines();
-    let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
+    //let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
 
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
@@ -140,7 +140,9 @@ pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
 
     filtrar_filas(&mut lineas, &mut rows, &consulta, &index_vector_consulta, &index_condiciones)?;
     ordenar_filas(&mut rows, order_by_index, &consulta.order_by);
-    escribir_resultado(&mut rows, &index_vector_consulta, &mut archivo_output)?;
+    //escribir_resultado(&mut rows, &index_vector_consulta, &mut archivo_output)?;
+    escribir_resultado(&mut rows, &index_vector_consulta)?;
+
 
     Ok(())
 }
@@ -155,6 +157,21 @@ fn filtrar_filas(
     for linea_actual in lineas {
         let line = linea_actual?;
         let columnas: Vec<&str> = line.split(',').collect();
+        
+
+        match &consulta.where_conditions {
+            Some(where_conditions) if !where_conditions.conditions.is_empty() => {
+                if evaluar_condiciones_logicas(&columnas, index_condiciones, where_conditions) {
+                    rows.push(line);
+                }
+            }
+            _ => {
+                // Si no hay condiciones WHERE, o están vacías, se añade la línea
+                rows.push(line);
+            }
+        }
+
+        /*
         let where_conditions = &consulta.where_conditions;
     
         if let Some(where_conditions) = where_conditions {
@@ -166,14 +183,27 @@ fn filtrar_filas(
         }else{
             rows.push(line); //si no hay condiciones where
         }
+        */
         
     }
-    println!("{:?}", rows);
+    //println!("{:?}", rows);
     Ok(())
 }
 
 fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by: &Option<OrderBy>) {
-    if let Some(index) = order_by_index {
+    
+    if let (Some(index), Some(order_by_value)) = (order_by_index, order_by.as_ref()) {
+        rows.sort_by(|a, b| {
+            let a_columnas: Vec<&str> = a.split(',').collect();
+            let b_columnas: Vec<&str> = b.split(',').collect();
+            match order_by_value.orden {
+                Orden::Asc => a_columnas[index].cmp(&b_columnas[index]),
+                Orden::Desc => b_columnas[index].cmp(&a_columnas[index]),
+            }
+        });
+    }
+
+    /*if let Some(index) = order_by_index {
         rows.sort_by(|a, b| {
             let a_columnas: Vec<&str> = a.split(',').collect();
             let b_columnas: Vec<&str> = b.split(',').collect();
@@ -182,20 +212,21 @@ fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by
                 Orden::Desc => b_columnas[index].cmp(&a_columnas[index]),
             }
         });
-    }
+    }*/
 }
 
 fn escribir_resultado(
     rows: &mut Vec<String>,
     index_vector_consulta: &Vec<usize>,
-    archivo_output: &mut BufWriter<fs::File>,
+    //archivo_output: &mut BufWriter<fs::File>,
 ) -> io::Result<()> {
     
     for line in rows {
         let columnas: Vec<&str> = line.split(',').collect();
         let columnas_seleccionadas: Vec<&str> =
             index_vector_consulta.iter().map(|&i| columnas[i]).collect();
-        writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
+        println!("{}", columnas_seleccionadas.join(","));
+        //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
     }
     Ok(())
 }
