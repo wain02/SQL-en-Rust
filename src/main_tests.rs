@@ -1,14 +1,15 @@
 #![cfg(test)]
 
-/*#[test]
+#[test]
 fn test_insert_simple() {
     let consulta = "INSERT INTO ordenes (id, id_cliente, producto, cantidad) VALUES (111, 6, 'Laptop', 3);";
     let consulta_ref = consulta.to_string();
     let direccion_archivo = "archivosCSV".to_string();
     let result = super::insert::comando_insert(consulta_ref, direccion_archivo);
+    println!("Resultado: {:?}", result);
     assert_eq!(result.is_ok(), true);
 }
-
+/*
 #[test]
 fn test_insert_complejo() {
     let consulta = "INSERT INTO ordenes (id, id_cliente, producto, cantidad) VALUES (111, 6, 'Laptop', 3),
@@ -47,13 +48,14 @@ fn test_select() {
     assert_eq!(result.is_ok(), true);
 }*/
 
-#[test]
+/*#[test]
 fn test_select_simple() {
     let consulta: String = "SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;".to_string();
-    let direccion_archivo: String = "./archivosCSV".to_string();
+    let direccion_archivo: String = "tp_1/src/archivosCSV".to_string();
     let result = super::select::comando_select(consulta, direccion_archivo);
+    println!("Resultado: {:?}", result);
     assert_eq!(result.is_ok(), true);
-}
+}*/
 
 /*#[test]
 fn test_select_order_by() {

@@ -9,9 +9,9 @@ pub fn archivo(nombre_archivo: &String, direccion_archivo: &String) -> Result<St
     tabla.push_str("/");
     tabla.push_str(&nombre_archivo.replace(";", ""));
     tabla.push_str(".csv");
-    println!("{:?}", tabla);
     if !Path::new(&tabla).exists() {
-        println!("No existe la tabla");
+        println!("No existe la tabla: {}", tabla);
+
         return Err(SQLError::new("INVALID_TABLE"));
     }
     return Ok(tabla)

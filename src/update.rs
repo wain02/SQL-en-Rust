@@ -22,7 +22,7 @@ pub fn comando_update(consulta_del_terminal: String, direccion_archivo: String) 
         println!("Error: {}", error);
         return Err(error);
     }
-    let mut consulta_principal = consulta_del_terminal.trim().to_string();
+    let consulta_principal = consulta_del_terminal.trim().to_string();
     let condiciones_separadas = regex_casero(&consulta_principal, vec!["WHERE", "UPDATE", "SET"]);
     if condiciones_separadas.len() < 2 {
         let error = SQLError::new("INVALID_SYNTAX");
@@ -41,13 +41,13 @@ pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
     let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
 
     let mut rows = Vec::new();
-    let mut header = String::new();
+    //let mut header = String::new();
     let mut index_condiciones = Vec::new();
     let mut index_editar = Vec::new();
 
     if let Some(Ok(line)) = lineas.next() {
         writeln!(archivo_output, "{}", line)?;
-        header = line;
+        let header = line;
         rows.push(&header);
         let columnas: Vec<&str> = header.split(',').collect();
         for (i, columna) in columnas.iter().enumerate() {
@@ -62,7 +62,7 @@ pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
             for edit in &consulta.set {
                 let col = &edit.0;
                 if *col == columna {
-                    let valor_edir = &edit.1;
+                    //let valor_edir = &edit.1;
                     index_editar.push((i, &edit.1));
                 }
             }
@@ -116,13 +116,6 @@ fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(
 fn crear_consulta_update(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<UpdateSql, SQLError> {
     
     let tabla_de_consulta = archivo(&condiciones_separadas[0], &direccion_archivo)?;
-    /*let mut tabla_de_consulta: String = direccion_archivo.to_string();
-    tabla_de_consulta.push_str("/");
-    tabla_de_consulta.push_str(&condiciones_separadas[0].replace(";", ""));
-    tabla_de_consulta.push_str(".csv");
-    if !Path::new(&tabla_de_consulta).exists() {
-        return Err(SQLError::new("INVALID_TABLE"));
-    } */
     
     let set_clause = extraer_set(&condiciones_separadas[1]);
 

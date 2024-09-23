@@ -1,6 +1,6 @@
 //cargo run -- ruta/a/tablas "DELETE FROM ordenes  WHERE producto = 'Laptop';"
 use std::{fs, io::BufWriter};
-use crate::parciar::{regex_casero, parse_operadores, evaluar_condiciones_logicas, parciar_condiciones_logicas};
+use crate::parciar::{regex_casero, evaluar_condiciones_logicas, parciar_condiciones_logicas};//parse_operadores
 use crate::sql_predicate::SqlCondicionesLogicas;
 use crate::errores::SQLError;
 use std::io;

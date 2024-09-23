@@ -2,9 +2,9 @@ use crate::parciar::{regex_casero, evaluar_condiciones_logicas, parciar_condicio
 use crate::sql_predicate::SqlCondicionesLogicas;
 use crate::errores::SQLError;
 use crate::sql_conditions::SqlSelect;
-use std::{fs, io::BufWriter};
+use std::fs;
 use std::io;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader};
 use crate::manejo_archivos::archivo;
 
 
@@ -69,50 +69,14 @@ pub fn comando_select(consulta_del_terminal: String, direccion_archivo: String) 
 
 }
 
-/*
-fn procesar_header(lines: &mut std::io::Lines<BufReader<fs::File>>,consulta: &SelectSql,
-) -> io::Result<(Vec<usize>, Vec<(usize, &SqlSelect)>, Option<usize>)> {
-    let mut index_vector_consulta = Vec::new();
-    let mut index_condiciones = Vec::new();
-    let mut order_by_index = None;
-
-    if let Some(Ok(header)) = lines.next() {
-        let columnas_archivo: Vec<&str> = header.split(',').collect();
-        for (i, columna) in columnas_archivo.iter().enumerate() {
-            let columna = columna.trim().to_string();
-            if consulta.select.is_empty() || consulta.select.contains(&columna) {
-                index_vector_consulta.push(i);
-            }
-
-            if let Some(where_conditions) = &consulta.where_conditions {
-                for cond in &where_conditions.conditions {
-                    if cond.columna.trim() == columna {
-                        index_condiciones.push((i, cond));
-                    }
-                }
-            }
-
-            if let Some(order_by) = &consulta.order_by {
-                if order_by.columna == columna {
-                    order_by_index = Some(i);
-                }
-            }
-        }
-    }
-    Ok((index_vector_consulta, index_condiciones, order_by_index))
-}*/
-
 pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     let mut rows = Vec::new();
     let input = BufReader::new(fs::File::open(&consulta.tabla)?);
-    //let input = BufReader::new(fs::File::open("archivosCSV/ordenes.csv")?);
-
     let mut lineas = input.lines();
-    //let mut archivo_output = BufWriter::new(fs::File::create("output.csv")?);
-
     let mut index_vector_consulta = Vec::new();
     let mut index_condiciones = Vec::new();
     let mut order_by_index = None;
+
 
     if let Some(Ok(header)) = &lineas.next() {
         let columnas_archivo: Vec<&str> = header.split(',').collect();
@@ -140,7 +104,6 @@ pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
 
     filtrar_filas(&mut lineas, &mut rows, &consulta, &index_vector_consulta, &index_condiciones)?;
     ordenar_filas(&mut rows, order_by_index, &consulta.order_by);
-    //escribir_resultado(&mut rows, &index_vector_consulta, &mut archivo_output)?;
     escribir_resultado(&mut rows, &index_vector_consulta)?;
 
 
@@ -169,24 +132,8 @@ fn filtrar_filas(
                 // Si no hay condiciones WHERE, o están vacías, se añade la línea
                 rows.push(line);
             }
-        }
-
-        /*
-        let where_conditions = &consulta.where_conditions;
-    
-        if let Some(where_conditions) = where_conditions {
-            if where_conditions.conditions.is_empty()
-            || evaluar_condiciones_logicas(&columnas, index_condiciones, consulta.where_conditions.as_ref().unwrap())
-        {
-            rows.push(line);
-        }
-        }else{
-            rows.push(line); //si no hay condiciones where
-        }
-        */
-        
+        }    
     }
-    //println!("{:?}", rows);
     Ok(())
 }
 
@@ -203,22 +150,11 @@ fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by
         });
     }
 
-    /*if let Some(index) = order_by_index {
-        rows.sort_by(|a, b| {
-            let a_columnas: Vec<&str> = a.split(',').collect();
-            let b_columnas: Vec<&str> = b.split(',').collect();
-            match order_by.as_ref().unwrap().orden {
-                Orden::Asc => a_columnas[index].cmp(&b_columnas[index]),
-                Orden::Desc => b_columnas[index].cmp(&a_columnas[index]),
-            }
-        });
-    }*/
 }
 
 fn escribir_resultado(
     rows: &mut Vec<String>,
     index_vector_consulta: &Vec<usize>,
-    //archivo_output: &mut BufWriter<fs::File>,
 ) -> io::Result<()> {
     
     for line in rows {    
@@ -234,13 +170,6 @@ fn escribir_resultado(
 fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Option<OrderBy>, direccion_archivo: String) -> Result<SelectSql, SQLError> {
     
     let tabla_de_consulta = archivo(&condiciones_separadas[1].to_string(), &direccion_archivo.to_string())?;
-    /*let mut tabla_de_consulta: String = direccion_archivo.to_string();
-    tabla_de_consulta.push_str("/");
-    tabla_de_consulta.push_str(&condiciones_separadas[1].replace(";", ""));
-    tabla_de_consulta.push_str(".csv");
-    if !Path::new(&tabla_de_consulta).exists() {
-        return Err(SQLError::new("INVALID_TABLE"));
-    }*/
 
     let selected_columns = extraer_columnas(&condiciones_separadas[0]);
 
