@@ -2,7 +2,8 @@ use crate::errores::SQLError;
 use std::path::Path;
 
 
-
+///Recibe el nombre del archivo y el path del archivo.
+/// Devuelve el path completo del archivo.
 pub fn archivo(nombre_archivo: &String, direccion_archivo: &String) -> Result<String, SQLError> {
 
     let mut tabla: String = direccion_archivo.to_string();

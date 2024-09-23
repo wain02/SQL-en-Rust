@@ -1,6 +1,8 @@
 use crate::sql_conditions::SqlSelect;
 use crate::sql_predicate::{SqlOperador, SqlCondicionesLogicas};
 
+/// Recibe una consulta SQL y las claves para parciarlo.
+/// Retorna un vector con las partes de la consulta.
 pub fn regex_casero(sql: &str, claves: Vec<&str>) -> Vec<String> {
     let mut partes = Vec::new();
     let mut partes_actuales = String::new();
@@ -24,7 +26,8 @@ pub fn regex_casero(sql: &str, claves: Vec<&str>) -> Vec<String> {
     partes
 }
 
-
+///Recibe una condicion de la consulta SQL.
+/// retorna una tupla con la columna, el operador y el valor.
 pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
     let operadores = ['>', '<', '='];
 
@@ -51,7 +54,8 @@ pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
 }
 
 
-
+///Recibe las columnas, el indice de la condicion y la condicion de las condiciones.
+/// Retorna un booleano si la condicion se cumple o no.
 pub fn evaluar_condiciones_logicas(
     columnas: &Vec<&str>, 
     index_condiciones: &Vec<(usize, &SqlSelect)>, 
@@ -78,7 +82,8 @@ pub fn evaluar_condiciones_logicas(
     result
 }
 
-
+///Recibe las columnas, el indice y la condicion.
+/// Retorna un booleano si la condicion se cumple o no.
 pub fn unica_condition(
     columnas: &Vec<&str>,
     index: usize,
@@ -125,7 +130,8 @@ pub fn unica_condition(
     }
 }
 
-
+///Recibe la condicion de la consulta SQL.
+/// Retorna un struct con las condiciones logicas.
 pub fn parciar_condiciones_logicas(condicion_raw: &str) -> SqlCondicionesLogicas {
     let mut conditions = Vec::new();
     let mut logic_ops = Vec::new();

@@ -15,6 +15,7 @@ pub struct UpdateSql {
     where_conditions: Option<SqlCondicionesLogicas>,
 }
 
+///Recibe la consulta update de SQL y el path de los archivos CSV.
 pub fn comando_update(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError> {
 
     if !consulta_del_terminal.contains("UPDATE") || !consulta_del_terminal.contains("SET") {
@@ -34,6 +35,8 @@ pub fn comando_update(consulta_del_terminal: String, direccion_archivo: String) 
     Ok(())
 }
 
+///Recibe el struct UpdateSql relleno de la consulta 
+///Se encarga de abrir el archivo CSV y filtrarlo.
 pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
     
     let input = BufReader::new(fs::File::open(&consulta.tabla)?);
@@ -72,7 +75,8 @@ pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
     Ok(())
 }
 
-
+///Obtiene todos los filtros de update_csv
+///Se encarga de modificar el archivo CSV.
 pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>, 
     lineas: &mut std::io::Lines<BufReader<fs::File>>, 
     consulta: &UpdateSql, 
@@ -104,6 +108,7 @@ pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>,
     Ok(())
 }
 
+///Remplaza el valor de la fila por el que corresponda.
 fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(usize, &String)>) -> String {
     let mut columnas: Vec<&str> = line.split(',').collect();
     for (columna, valor) in index_editar {
@@ -113,6 +118,9 @@ fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(
 
 }
 
+
+///Recibe la consulta SQL parciada en un vector y el path de los archivos CSV.
+/// devuelve un Result con el struct UpdateSql relleno con la consulta. 
 fn crear_consulta_update(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<UpdateSql, SQLError> {
     
     let tabla_de_consulta = archivo(&condiciones_separadas[0], &direccion_archivo)?;
@@ -132,6 +140,8 @@ fn crear_consulta_update(condiciones_separadas: Vec<String>, direccion_archivo: 
     })
 }
 
+
+///Obtiene el set (valores a modificar) de la consulta SQL y lo parcea. 
 fn extraer_set(consulta_set: &str) -> Vec<(String, String)> {
     let mut set_clause = vec![];
     let sets: Vec<&str> = consulta_set.trim().split(',').collect();

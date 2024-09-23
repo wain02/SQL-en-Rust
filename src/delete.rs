@@ -8,6 +8,8 @@ use std::io::{BufRead, BufReader, Write};
 use crate::sql_conditions::SqlSelect;
 use crate::manejo_archivos::archivo;
 
+
+
 #[derive(Debug)]
 pub struct DeleteSQL {
     tabla: String,
@@ -15,6 +17,8 @@ pub struct DeleteSQL {
 }
 
 
+
+///Funcion principal que recibe la consulta delete de SQL y el path de los archivos CSV.
 pub fn comando_delete(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError>{
     //DELETE FROM ordenes WHERE producto = 'Laptop';
     if !consulta_del_terminal.contains("DELETE FROM") || !consulta_del_terminal.contains("WHERE") {
@@ -36,7 +40,8 @@ pub fn comando_delete(consulta_del_terminal: String, direccion_archivo: String) 
     Ok(())
 }
 
-
+///Recibe el nombre de la tabla y las condiciones logicas.
+/// Se encarga de abrir el archivo CSV y filtrarlo por las condiciones logicas.
 pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> io::Result<()>{
     let vector_consulta = Vec::new();
     let mut index_vector_consulta = Vec::new();
@@ -70,7 +75,8 @@ pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> i
 }
 
 
-
+///Recibe las lineas del archivo, la tabla, los indices de las columnas a seleccionar, los indices de las condiciones y las condiciones logicas.
+///Se ocupa de reescribir el archivo CSV sin las filas que cumplen con las condiciones.
 fn escribir_delete(
     archivo_output: &mut BufWriter<fs::File>,
     lines: &mut std::io::Lines<BufReader<fs::File>>,
@@ -99,9 +105,11 @@ fn escribir_delete(
     Ok(())
 }
 
+
+//Obtiene la consulta SQL parciada como vector y el path de los archivos csv
+//Retorna un Result con el struct DeleteSQL relleno con la consulta
 fn crear_consulta_delete(condiciones_separadas: Vec<String>, direccion_archivo: String) -> Result<DeleteSQL, SQLError> {
     //let mut tabla = String::new(); 
-
     let tabla = archivo(&condiciones_separadas[0].to_string(), &direccion_archivo.to_string())?;
 
     let where_conditions = parciar_condiciones_logicas(&condiciones_separadas[1].replace(";",""));

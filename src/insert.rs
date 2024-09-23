@@ -20,7 +20,7 @@ pub struct InsertSql {
     columnas: Vec<String>,
     values: Vec<String>,
 }
-
+///Funcion principal que recibe la consulta insert de SQL y el path.
         
 pub fn comando_insert(consulta_inst_terminal: String, direccion_archivo: String)  -> Result<(),SQLError>{
     validar_insert(&consulta_inst_terminal)?;
@@ -30,6 +30,8 @@ pub fn comando_insert(consulta_inst_terminal: String, direccion_archivo: String)
 
 } 
 
+///Obtien la cosulta parciada en el struct InsertSql
+/// escribe en archivo csv lo pedido
 pub fn insert_csv(consulta_insertar: InsertSql) -> io::Result<()>{
     
     let file = OpenOptions::new()
@@ -46,6 +48,9 @@ pub fn insert_csv(consulta_insertar: InsertSql) -> io::Result<()>{
     Ok(())
 } 
 
+///Obtiene la consulta SQL
+///Valida si la estructura del insert es correcta
+ 
 pub fn validar_insert(consulta: &str) -> Result<(), SQLError> {
     if !consulta.contains("INSERT INTO") || !consulta.contains("VALUES") {
         return Err(SQLError::new("INVALID_SYNTAX"));
@@ -53,7 +58,8 @@ pub fn validar_insert(consulta: &str) -> Result<(), SQLError> {
     Ok(())
 }
 
-
+///Obtiene la consulta de SQL y el path.
+/// Recibe a consulta y la parcea para devolver el struct InsertSql
 pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<InsertSql, SQLError> {
     let consulta_limpia = consulta.replace("\n", " ").replace(";", "");
     

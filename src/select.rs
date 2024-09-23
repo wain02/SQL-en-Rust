@@ -34,7 +34,7 @@ pub enum Orden {
 
 
 
-
+///Recibe la consulta select de SQL y el path de los archivos CSV.
 pub fn comando_select(consulta_del_terminal: String, direccion_archivo: String) -> Result<(), SQLError> {
     //SELECT id, producto, id_cliente FROM ordenes WHERE cantidad > 1;
     if !consulta_del_terminal.contains("SELECT") || !consulta_del_terminal.contains("FROM") {
@@ -69,6 +69,8 @@ pub fn comando_select(consulta_del_terminal: String, direccion_archivo: String) 
 
 }
 
+///Recibe la consulta SQL parciada en el struct SelectSql
+///Se encarga de selccionar las columnas en el archivo CSV
 pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     let mut rows = Vec::new();
     let input = BufReader::new(fs::File::open(&consulta.tabla)?);
@@ -110,6 +112,7 @@ pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     Ok(())
 }
 
+///Recibe las lineas del archivo, las filtra y las guarda en un vector.
 fn filtrar_filas(
     lineas: &mut std::io::Lines<BufReader<fs::File>>,
     rows: &mut Vec<String>,
@@ -136,7 +139,7 @@ fn filtrar_filas(
     }
     Ok(())
 }
-
+///Se encarga orden el vector rows
 fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by: &Option<OrderBy>) {
     
     if let (Some(index), Some(order_by_value)) = (order_by_index, order_by.as_ref()) {
@@ -151,7 +154,7 @@ fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by
     }
 
 }
-
+///Recibe las filas filtradas y las columnas seleccionadas.
 fn escribir_resultado(
     rows: &mut Vec<String>,
     index_vector_consulta: &Vec<usize>,
@@ -166,7 +169,8 @@ fn escribir_resultado(
     Ok(())
 }
 
-
+///Recibe las condiciones separadas, la clausula ORDER BY y el path de los archivos CSV.
+/// Parcea y guarda la informacion en el struct SelectSql
 fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Option<OrderBy>, direccion_archivo: String) -> Result<SelectSql, SQLError> {
     
     let tabla_de_consulta = archivo(&condiciones_separadas[1].to_string(), &direccion_archivo.to_string())?;
@@ -187,7 +191,7 @@ fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Op
         order_by: order_by_clause,
     })
 }
-
+///Recibe la clausula SELECT y la divide en columnas.
 fn extraer_columnas(consulta_seleccionada: &str) -> Vec<String> {
     let mut columnas_seleccionadas = vec![];
     let columnas: Vec<&str> = consulta_seleccionada.trim().split_whitespace().collect();
@@ -199,7 +203,7 @@ fn extraer_columnas(consulta_seleccionada: &str) -> Vec<String> {
     columnas_seleccionadas
 }
 
-
+///Recibe la clausula ORDER BY y la divide en columna y orden.
 fn extraer_order_by(order_by: &mut String) -> Result<OrderBy, SQLError> {
     let partes: Vec<&str> = order_by.trim().split_whitespace().collect();
     if partes.len() == 2 {
