@@ -104,25 +104,6 @@ fn crear_consulta_delete(condiciones_separadas: Vec<String>, direccion_archivo: 
 
     let tabla = archivo(&condiciones_separadas[0].to_string(), &direccion_archivo.to_string())?;
 
-    /*let mut tabla: String = direccion_archivo.to_string();
-    tabla.push_str("/");
-    tabla.push_str(&condiciones_separadas[0].replace(";", ""));
-    tabla.push_str(".csv");
-    if !Path::new(&tabla).exists() {
-        println!("No existe la tabla");
-        return Err(SQLError::new("INVALID_TABLE"));
-    }*/
-
-    /*let tabla_de_consulta = condiciones_separadas[0].trim().to_string();
-    match tabla_de_consulta.as_str(){
-        "ordenes" => tabla = "ordenes.csv".to_string(),
-        "clientes" =>tabla = "clientes.csv".to_string(),
-        _ => {
-            let error = SQLError::new("INVALID_TABLE");
-            println!("Error: {}", error);
-            return Err(error);
-        }
-    }*/
     let where_conditions = parciar_condiciones_logicas(&condiciones_separadas[1].replace(";",""));
     Ok(DeleteSQL { tabla, where_conditions })
 }
