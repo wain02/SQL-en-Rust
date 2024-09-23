@@ -221,10 +221,9 @@ fn escribir_resultado(
     //archivo_output: &mut BufWriter<fs::File>,
 ) -> io::Result<()> {
     
-    for line in rows {
+    for line in rows {    
         let columnas: Vec<&str> = line.split(',').collect();
-        let columnas_seleccionadas: Vec<&str> =
-            index_vector_consulta.iter().map(|&i| columnas[i]).collect();
+        let columnas_seleccionadas: Vec<&str> = index_vector_consulta.iter().map(|&i| columnas[i]).collect(); 
         println!("{}", columnas_seleccionadas.join(","));
         //writeln!(archivo_output, "{}", columnas_seleccionadas.join(","))?;
     }
@@ -265,7 +264,7 @@ fn extraer_columnas(consulta_seleccionada: &str) -> Vec<String> {
     let columnas: Vec<&str> = consulta_seleccionada.trim().split_whitespace().collect();
     if !columnas.contains(&"*") {
         for col in columnas {
-            columnas_seleccionadas.push(col.to_string());
+            columnas_seleccionadas.push(col.to_string().replace(",", ""));
         }
     }
     columnas_seleccionadas
