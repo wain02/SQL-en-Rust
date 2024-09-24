@@ -71,7 +71,7 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
     let previo_values = division_values[0];
     let posterior_values = division_values[1]; 
     let valores_insert: Vec<&str> = posterior_values.split("),").collect();
-    let mut columas_insert: Vec<&str> = previo_values.trim().split_whitespace().collect();
+    let mut columas_insert: Vec<&str> = previo_values.split_whitespace().collect();
 
     if columas_insert.len() < 3 {
         return Err(SQLError::new("INVALID_SYNTAX"));
@@ -79,7 +79,7 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
     columas_insert.remove(0);
     columas_insert.remove(0); 
 
-    let tabla = archivo(&columas_insert[0].to_string(), &direccion_archivo.to_string())?;
+    let tabla = archivo(columas_insert[0], &direccion_archivo.to_string())?;
 
     columas_insert.remove(0);
 
@@ -87,7 +87,7 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
     let valores_insert: Vec<String> = valores_insert.into_iter().map(|s| s.to_string()).collect();
 
     Ok(InsertSql{
-        tabla: tabla,
+        tabla,
         columnas: columas_insert,
         values: valores_insert,
     })

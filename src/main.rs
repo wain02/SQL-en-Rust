@@ -19,7 +19,7 @@ fn main() {
     let consulta = consulta_terminal.replace("\n", " "); 
 
 
-    let mut partes_consulta: Vec<&str> = consulta.trim().split_whitespace().collect(); // Divide la cadena en partes
+    let mut partes_consulta: Vec<&str> = consulta.split_whitespace().collect(); // Divide la cadena en partes
     let instruccion = partes_consulta[0];
     
     partes_consulta.remove(0);
@@ -48,7 +48,6 @@ fn main() {
         },
         _ => {
             println!("Instrucción no válida");
-            return;
         }
     }
 

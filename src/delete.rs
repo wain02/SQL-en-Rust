@@ -59,7 +59,7 @@ pub fn delete_csv(tabla: String, condiciones_logicas: SqlCondicionesLogicas)-> i
             if vector_consulta.is_empty() {
                 index_vector_consulta.push(contador_columnas);
             }
-            else if vector_consulta.contains(&columna.to_string()) {
+            if vector_consulta.contains(&columna.to_string()) {
                 index_vector_consulta.push(contador_columnas);
                 
             }
@@ -81,8 +81,8 @@ fn escribir_delete(
     archivo_output: &mut BufWriter<fs::File>,
     lines: &mut std::io::Lines<BufReader<fs::File>>,
     tabla: &String,
-    index_vector_consulta: &Vec<usize>,
-    index_condiciones: &Vec<(usize, &SqlSelect)>,
+    index_vector_consulta: &[usize],
+    index_condiciones: &[(usize, &SqlSelect)],
     condiciones_logicas: &SqlCondicionesLogicas,
 ) -> io::Result<()>{
     if index_condiciones.is_empty() {
@@ -93,7 +93,7 @@ fn escribir_delete(
     for line in lines {
         let line = line?;
         let columnas: Vec<&str> = line.split(',').collect();
-        if evaluar_condiciones_logicas(&columnas, &index_condiciones, &condiciones_logicas){
+        if evaluar_condiciones_logicas(&columnas, index_condiciones, condiciones_logicas){
             println!("Se eliminaron los datos");
         }else{
             //writeln!(archivo_output, "{}", line)?;

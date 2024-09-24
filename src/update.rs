@@ -80,7 +80,7 @@ pub fn update_csv(consulta: UpdateSql) -> io::Result<()> {
 pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>, 
     lineas: &mut std::io::Lines<BufReader<fs::File>>, 
     consulta: &UpdateSql, 
-    index_condiciones:&Vec<(usize, &SqlSelect)>, 
+    index_condiciones: &[(usize, &SqlSelect)], 
     index_editar:&Vec<(usize, &String)>
 ) -> io::Result<()> {
     for linea_actual in lineas {
@@ -91,9 +91,9 @@ pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>,
         if let Some(where_conditions) = where_conditions {
             
             if where_conditions.conditions.is_empty()
-                || evaluar_condiciones_logicas(&columnas, &index_condiciones, &consulta.where_conditions.as_ref().unwrap())
+                || evaluar_condiciones_logicas(&columnas, index_condiciones, consulta.where_conditions.as_ref().unwrap())
             {
-                let new_line = &actualizar_fila(&line, &consulta.set, &index_editar);
+                let new_line = &actualizar_fila(&line, &consulta.set, index_editar);
                 writeln!(archivo_output, "{}", new_line)?;
             } else {
                 writeln!(archivo_output, "{}", line)?;
@@ -109,7 +109,7 @@ pub fn escribir_resultado(archivo_output:&mut BufWriter<fs::File>,
 }
 
 ///Remplaza el valor de la fila por el que corresponda.
-fn actualizar_fila(line: &str, set: &Vec<(String, String)>, index_editar: &Vec<(usize, &String)>) -> String {
+fn actualizar_fila(line: &str, _set: &[(String, String)], index_editar: &Vec<(usize, &String)>) -> String {
     let mut columnas: Vec<&str> = line.split(',').collect();
     for (columna, valor) in index_editar {
         columnas[*columna] = valor;

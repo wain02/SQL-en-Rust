@@ -104,7 +104,7 @@ pub fn select_csv(consulta: SelectSql) -> io::Result<()> {
     }
 
 
-    filtrar_filas(&mut lineas, &mut rows, &consulta, &index_vector_consulta, &index_condiciones)?;
+    filtrar_filas(&mut lineas, &mut rows, &consulta, &index_condiciones)?;
     ordenar_filas(&mut rows, order_by_index, &consulta.order_by);
     escribir_resultado(&mut rows, &index_vector_consulta)?;
 
@@ -117,8 +117,8 @@ fn filtrar_filas(
     lineas: &mut std::io::Lines<BufReader<fs::File>>,
     rows: &mut Vec<String>,
     consulta: &SelectSql,
-    index_vector_consulta: &Vec<usize>,
-    index_condiciones: &Vec<(usize, &SqlSelect)>,
+    //index_vector_consulta: &Vec<usize>,
+    index_condiciones: &[(usize, &SqlSelect)],
 ) -> io::Result<()> {
     for linea_actual in lineas {
         let line = linea_actual?;
@@ -140,15 +140,15 @@ fn filtrar_filas(
     Ok(())
 }
 ///Se encarga orden el vector rows
-fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by: &Option<OrderBy>) {
+fn ordenar_filas(rows: &mut [String], order_by_index: Option<usize>, order_by: &Option<OrderBy>) {
     
     if let (Some(index), Some(order_by_value)) = (order_by_index, order_by.as_ref()) {
         rows.sort_by(|a, b| {
             let a_columnas: Vec<&str> = a.split(',').collect();
             let b_columnas: Vec<&str> = b.split(',').collect();
             match order_by_value.orden {
-                Orden::Asc => a_columnas[index].cmp(&b_columnas[index]),
-                Orden::Desc => b_columnas[index].cmp(&a_columnas[index]),
+                Orden::Asc => a_columnas[index].cmp(b_columnas[index]),
+                Orden::Desc => b_columnas[index].cmp(a_columnas[index]),
             }
         });
     }
@@ -157,7 +157,7 @@ fn ordenar_filas(rows: &mut Vec<String>, order_by_index: Option<usize>, order_by
 ///Recibe las filas filtradas y las columnas seleccionadas.
 fn escribir_resultado(
     rows: &mut Vec<String>,
-    index_vector_consulta: &Vec<usize>,
+    index_vector_consulta: &[usize],
 ) -> io::Result<()> {
     
     for line in rows {    
@@ -194,7 +194,7 @@ fn crear_consulta_select(condiciones_separadas: Vec<String>, order_by_clause: Op
 ///Recibe la clausula SELECT y la divide en columnas.
 fn extraer_columnas(consulta_seleccionada: &str) -> Vec<String> {
     let mut columnas_seleccionadas = vec![];
-    let columnas: Vec<&str> = consulta_seleccionada.trim().split_whitespace().collect();
+    let columnas: Vec<&str> = consulta_seleccionada.split_whitespace().collect();
     if !columnas.contains(&"*") {
         for col in columnas {
             columnas_seleccionadas.push(col.to_string().replace(",", ""));
@@ -204,20 +204,22 @@ fn extraer_columnas(consulta_seleccionada: &str) -> Vec<String> {
 }
 
 ///Recibe la clausula ORDER BY y la divide en columna y orden.
-fn extraer_order_by(order_by: &mut String) -> Result<OrderBy, SQLError> {
-    let partes: Vec<&str> = order_by.trim().split_whitespace().collect();
+fn extraer_order_by(order_by: &mut str) -> Result<OrderBy, SQLError> {
+    let partes: Vec<&str> = order_by.split_whitespace().collect();
     if partes.len() == 2 {
         let orden = match partes[1].replace(";","").to_uppercase().as_str() {
             "ASC" => Orden::Asc,
             "DESC" => Orden::Desc,
             _ => return Err(SQLError::new("INVALID_ORDER")),
         };
-        return Ok(OrderBy {
+        Ok(OrderBy {
             columna: partes[0].to_string(),
             orden,
-        });
+        })
     }else {
-        return Err(SQLError::new("INVALID_ORDER_FORMAT"));
+        let error = SQLError::new("INVALID_SYNTAX");
+        println!("Error: {}", error);
+        Err(error)
     }
     
     

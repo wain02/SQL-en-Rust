@@ -1,5 +1,5 @@
 //#![cfg(test)]
-use super::*;
+//use super::*;
 #[test]
 fn test_insert_simple() {
     let consulta = "INSERT INTO ordenes (id, id_cliente, producto, cantidad) VALUES (111, 6, 'Laptop', 3);";

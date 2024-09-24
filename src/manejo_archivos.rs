@@ -4,10 +4,10 @@ use std::path::Path;
 
 ///Recibe el nombre del archivo y el path del archivo.
 /// Devuelve el path completo del archivo.
-pub fn archivo(nombre_archivo: &String, direccion_archivo: &String) -> Result<String, SQLError> {
+pub fn archivo(nombre_archivo: &str, direccion_archivo: &String) -> Result<String, SQLError> {
 
     let mut tabla: String = direccion_archivo.to_string();
-    tabla.push_str("/");
+    tabla.push('/');
     tabla.push_str(&nombre_archivo.replace(";", ""));
     tabla.push_str(".csv");
     if !Path::new(&tabla).exists() {
@@ -15,5 +15,5 @@ pub fn archivo(nombre_archivo: &String, direccion_archivo: &String) -> Result<St
 
         return Err(SQLError::new("INVALID_TABLE"));
     }
-    return Ok(tabla)
+    Ok(tabla)
 }

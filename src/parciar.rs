@@ -58,7 +58,7 @@ pub fn parse_operadores(condicion: &str) -> Option<(String, String, String)> {
 /// Retorna un booleano si la condicion se cumple o no.
 pub fn evaluar_condiciones_logicas(
     columnas: &Vec<&str>, 
-    index_condiciones: &Vec<(usize, &SqlSelect)>, 
+    index_condiciones: &[(usize, &SqlSelect)], 
     condiciones_logicas: &SqlCondicionesLogicas
 ) -> bool {
     if index_condiciones.is_empty() {
@@ -67,7 +67,7 @@ pub fn evaluar_condiciones_logicas(
     }
     
     let mut result = unica_condition(columnas, index_condiciones[0].0, index_condiciones[0].1);
-    let mut proxima_condicion = false;
+    let mut proxima_condicion: bool;
     for (i, logic_op) in condiciones_logicas.logic_ops.iter().enumerate() {
         if index_condiciones.len() == 1 {
             proxima_condicion = unica_condition(columnas, index_condiciones[i].0, index_condiciones[i].1);
@@ -93,7 +93,7 @@ pub fn unica_condition(
     if condition.operador == "grupo" {
 
         if let sub_condiciones = parciar_condiciones_logicas(&condition.valor) {
-            return evaluar_condiciones_logicas(columnas, &vec![], &sub_condiciones);
+            return evaluar_condiciones_logicas(columnas, &[], &sub_condiciones);
         } else {
             eprintln!("Error al parsear subcondiciones: {}", condition.valor);
             return false;
@@ -156,7 +156,7 @@ pub fn parciar_condiciones_logicas(condicion_raw: &str) -> SqlCondicionesLogicas
                 logic_ops = Vec::new();
             }
             ")" => {
-                if let Some((mut prev_conditions, mut prev_logic_ops)) = stack.pop() {
+                if let Some((mut prev_conditions, prev_logic_ops)) = stack.pop() {
                     
                     let logical_condition = SqlCondicionesLogicas {
                         conditions,
