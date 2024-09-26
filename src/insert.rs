@@ -1,10 +1,11 @@
 
 use std::fs::OpenOptions;
-use std::io::BufWriter;
+use std::io::{BufWriter, BufRead, BufReader};
 use std::io::Write;
 use std::io;
 use crate::errores::SQLError;
 use crate::manejo_archivos::archivo;
+use std::fs::File;
 
 //INSERT INTO ordenes (id, id_cliente, producto, cantidad) 
 //VALUES (111, 6, 'Laptop', 3),
@@ -17,7 +18,6 @@ use crate::manejo_archivos::archivo;
 #[derive(Debug)]
 pub struct InsertSql {
     tabla: String,
-    columnas: Vec<String>,
     values: Vec<String>,
 }
 ///Funcion principal que recibe la consulta insert de SQL y el path.
@@ -33,7 +33,6 @@ pub fn comando_insert(consulta_inst_terminal: String, direccion_archivo: String)
 ///Obtien la cosulta parciada en el struct InsertSql
 /// escribe en archivo csv lo pedido
 pub fn insert_csv(consulta_insertar: InsertSql) -> io::Result<()>{
-    
     let file = OpenOptions::new()
         .append(true)
         .open(&consulta_insertar.tabla)?;
@@ -85,11 +84,46 @@ pub fn procesar_consulta(consulta: &str, direccion_archivo: String) -> Result<In
 
     let columas_insert: Vec<String> = columas_insert.into_iter().map(|s| s.to_string()).collect();
     let valores_insert: Vec<String> = valores_insert.into_iter().map(|s| s.to_string()).collect();
-
+    let insertar = reordenar_consulta(&columas_insert, &valores_insert, &tabla)?;
+    //println!(" insert {:?}", insertar);
     Ok(InsertSql{
         tabla,
-        columnas: columas_insert,
-        values: valores_insert,
+        
+        values: insertar,
     })
+}
+
+
+pub fn reordenar_consulta(columnas: &Vec<String>, valores: &Vec<String>, tabla: &String ) -> Result<Vec<String>, SQLError> {
+    let input = BufReader::new(File::open(&tabla).map_err(|_| SQLError::new("INVALID_TABLE"))?);
+    let mut lines = input.lines();
+    let mut insert_final =  Vec::<String>::new(); 
+    if let Some(Ok(header)) = lines.next() {
+        let header_columns: Vec<&str> = header.split(',').collect(); 
+        let mut ordered_values = vec![String::new(); columnas.len()];
+        for valor in valores {
+            let valor_actual = valor.replace("(", "").replace(")", "").replace(" ", "");
+            let valor_insertar: Vec<&str> = valor_actual.split(',').collect();
+            for (i, columna) in columnas.iter().enumerate() {
+                let mut columna_encontrada = false;
+                for (j, header_column) in header_columns.iter().enumerate() {
+                    let columna_String = columna.replace("(", "").replace(")", "").replace(",", "").replace(" ","");
+                    if columna_String == header_column.trim() {
+                        ordered_values[i] = valor_insertar[j].trim().to_string();
+                        columna_encontrada = true;
+                    }
+                }
+                if !columna_encontrada {
+                    return Err(SQLError::new("INVALID_COLUMN"));
+                }
+            }
+            insert_final.push(ordered_values.join(","));
+
+        }
+                
+        Ok(insert_final)
+    } else {
+        Err(SQLError::new("ERROR"))
+    }
 }
 
